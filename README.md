@@ -1,316 +1,164 @@
-                   ┌──────────────────────────┐
-                   │        Angular Frontend  │
-                   │  - Sign Up / Login       │
-                   │  - Product List          │
-                   │  - Seller Dashboard      │
-                   │  - Media Manager         │
-                   └───────────┬──────────────┘
-                               │ HTTP (REST / JWT)
-                               ▼
-┌──────────────────────────────────────────────────────────────┐
-│                     API Gateway / Reverse Proxy              │
-│  - Routes requests to appropriate microservices              │
-│  - Handles authentication & authorization                    │
-│  - Rate limiting, logging (optional)                         │
-└───────────────┬───────────────────┬──────────────────────────┘
-                │                   │
-                │                   │
-                ▼                   ▼
-       ┌────────────────┐   ┌───────────────────┐
-       │  User Service  │   │ Product Service   │
-       │----------------│   │-------------------│
-       │ - Register user│   │ - CRUD Products   │
-       │ - Login        │   │ - Only seller     │
-       │ - JWT auth     │   │   can modify      │
-       │ - Profile      │   │ - Store media IDs │
-       │ - Avatar upload│   │ - Publish events  │
-       │ - MongoDB      │   │ - MongoDB         │
-       └─────┬──────────┘   └─────┬─────────────┘
-             │                    │
-             │ Kafka Events       │ Kafka Events
-             ▼                    ▼
-       ┌────────────────────────────────┐
-       │       Media Service            │
-       │--------------------------------│
-       │ - Upload product images        │
-       │ - Validate file type & size    │
-       │ - Store images (local / cloud) │
-       │ - Return URL for Product       │
-       │ - MongoDB / File Storage       │
-       └────────────────────────────────┘
-                   ┌───────────────────────────┐
-                   │        Angular Frontend   │
-                   │  - Sign Up / Login        │
-                   │  - Product List           │
-                   │  - Seller Dashboard       │
-                   │  - Media Manager          │
-                   └───────────┬───────────────┘
-                               │ HTTP (REST / JWT)
-                               ▼
-┌──────────────────────────────────────────────────────────────┐
-│                     API Gateway / Reverse Proxy              │
-│  - Routes requests to appropriate microservices              │
-│  - Handles authentication & authorization                    │
-│  - Rate limiting, logging (optional)                         │
-└───────────────┬───────────────────┬──────────────────────────┘
-                │                   │
-                │                   │
-                ▼                   ▼
-       ┌────────────────┐    ┌───────────────── ┐
-       │  User Service  │    │ Product Service  │
-       │----------------│    │----------------- │
-       │ - Register user│    │ - CRUD Products  │
-       │ - Login        │    │ - Only seller    │
-       │ - JWT auth     │    │   can modify     │
-       │ - Profile      │    │ - Store media IDs│
-       │ - Avatar upload│    │ - Publish events │
-       │ - MongoDB      │    │ - MongoDB        │
-       └─────┬──────────┘    └─────┬────────────┘
-             │                     │
-             │ Kafka Events        │ Kafka Events
-             ▼                     ▼
-       ┌──────────────────────────────┐
-       │       Media Service          │
-       │------------------------------│
-       │ - Upload product images      │
-       │ - Validate file type & size  │
-       │ - Store images (local / cloud)│
-       │ - Return URL for Product     │
-       │ - MongoDB / File Storage     │
-       └──────────────────────────────┘
+# Marketplace Microservices — Project Context
 
+Spring Boot 3 microservices backend + Angular 17 frontend.
+Sellers can list products with images. Clients browse products.
+Three core services: User, Product, Media. Spring Cloud Gateway as single entry point.
 
-the architecture will implement -----------------------------------------------------------------------
+---
 
+## Architecture
 
-                   ┌───────────────────────────┐
-                   │        Angular Frontend   │
-                   │  - Sign Up / Login        │
-                   │  - Product List           │
-                   │  - Seller Dashboard       │
-                   │  - Media Manager          │
-                   └───────────┬───────────────┘
-                               │ HTTP (REST)
-                               ▼
-                   ┌───────────────────────────┐
-                   │   Spring Cloud Gateway    │
-                   │---------------------------│
-                   │ - Route requests to       │
-                   │   microservices           │
-                   │ - OAuth2 token validation │
-                   │ - Role-based routing      │
-                   └───────┬──────────┬────────┘
-                           │          │
-                           │          │
-                           ▼          ▼
-                ┌─────────────────┐   ┌─────────────────┐
-                │  User Service   │   │ Product Service │
-                │-----------------│   │-----------------│
-                │ - Register user │   │ - CRUD Products │
-                │ - Login         │   │ - Only seller   │
-                │ - OAuth2        │   │   can modify    │
-                │   Authorization │   │ - Store media IDs │
-                │ - Profile       │   │ - Publish events │
-                │ - Avatar upload │   │ - MongoDB      │
-                │ - MongoDB       │   └─────┬──────────┘
-                └─────┬───────────┘         │
-                      │ Kafka Events       │ Kafka Events
-                      ▼                    ▼
-                ┌──────────────────────────────┐
-                │       Media Service          │
-                │------------------------------│
-                │ - Upload product images      │
-                │ - Validate file type & size  │
-                │ - Store images (local/cloud) │
-                │ - Return URL for Product     │
-                │ - MongoDB / File Storage     │
-                └──────────────────────────────┘
+```
+Angular → API Gateway → [User Service | Product Service | Media Service]
+                                      ↕ Kafka (async, add later)
+                               [MongoDB per service — never shared]
+```
 
+Each service has its own MongoDB database. Do NOT query across databases.
+Kafka is optional — build without it first, add it after core services work.
 
+---
 
+## Project Structure
 
-we will use this architecture -------------------------
-All services (User, Product, Media) communicate through API Gateway.
+```
+/
+├── user-service/        # Auth, JWT, profiles
+├── product-service/     # Product CRUD, ownership
+├── media-service/       # File upload, validation
+├── api-gateway/         # Spring Cloud Gateway, JWT filter
+└── frontend/            # Angular 17
+```
 
-User Service handles authentication, including social login, and issues JWTs.
+---
 
-Frontend calls API Gateway only, never directly the services.
+## Common Commands
 
-Here’s how you can structure it.
+```bash
+# Run a service (from its directory)
+mvn spring-boot:run
 
-Architecture Diagram
-Angular Frontend
-       │
-       ▼
-API Gateway (Validation + Role Enforcement)
-       │
-       ├───────────────┐───────────────┐
-       ▼               ▼               ▼
-User Service       Product Service   Media Service
-- Login / Signup   - CRUD Products   - File Upload
-- Social Login     - Role Checks     - Role Checks
-- Issue JWT        - MongoDB         - File Storage
-- Refresh Tokens
-Flow Explanation
-1️⃣ Normal Login / Social Login
+# Run all services (from root if docker-compose present)
+docker-compose up
 
-User clicks login or login with Google/Facebook
+# Angular dev server
+cd frontend && ng serve
 
-Frontend sends login request to API Gateway
+# Run tests for a service
+mvn test
 
-API Gateway forwards request to User Service
+# Build all
+mvn clean install
+```
 
-User Service:
+---
 
-Validates username/password OR
+## Tech Stack
 
-Handles social login (exchanges authorization code for user profile)
+- **Backend:** Spring Boot 3, Spring Security 6 (JWT), Spring Cloud Gateway
+- **Database:** MongoDB (Mongoose-style documents, no JPA)
+- **Events:** Apache Kafka (async, optional phase 2)
+- **Frontend:** Angular 17+, standalone components, HttpClient
+- **Auth:** JWT — stateless, no sessions
 
-Creates or links local user
+---
 
-Issues JWT access token + refresh token
+## Critical Business Rules — Always Enforce
 
-2️⃣ API Gateway Token Validation
+1. **Only SELLER role can create/update/delete products.**
+   Check `role == SELLER` before any write. Return `403 FORBIDDEN` otherwise.
 
-Frontend sends requests with:
+2. **Only the product owner can modify it.**
+   Check `product.sellerId == currentUserId`. Never skip this.
 
-Authorization: Bearer <JWT>
+3. **File uploads: 2MB max, image/jpeg or image/png only.**
+   Validate real MIME type — do not trust the file extension.
 
-API Gateway:
+4. **Only the media owner can delete their file.**
+   Check `media.ownerId == currentUserId`.
 
-Validates JWT signature
+---
 
-Checks exp (expiry)
+## JWT
 
-Checks roles claim
+Token payload: `{ sub: userId, role: "SELLER"|"CLIENT", exp: <unix> }`
 
-Rejects unauthorized requests
+- Validated at the **Gateway** before forwarding to services
+- Services extract `userId` and `role` from the forwarded token/header
+- Password is **never** returned in any response
+- Use BCrypt for password hashing
 
-If valid → forwards request to appropriate service (User / Product / Media)
+---
 
-3️⃣ Microservices
+## API Routes
 
-Each service trusts API Gateway for JWT validation (defense in depth: optional JWT verification inside services)
+| Path prefix       | Routes to        |
+|-------------------|-----------------|
+| `/api/auth/**`    | User Service    |
+| `/api/users/**`   | User Service    |
+| `/api/products/**`| Product Service |
+| `/api/media/**`   | Media Service   |
 
-Use claims for business logic:
+---
 
-Product Service: only SELLER can create products
+## Error Response Shape
 
-Media Service: only SELLER can upload images
+Always return consistent error JSON:
 
-User Service: only ADMIN can see other users
+```json
+{ "error": "FORBIDDEN", "message": "Only sellers can create products" }
+{ "error": "FILE_TOO_LARGE", "maxSize": "2MB" }
+{ "error": "UNAUTHORIZED_ACTION", "message": "You do not own this resource" }
+{ "error": "INVALID_FILE_TYPE", "allowed": ["image/jpeg", "image/png"] }
+```
 
-4️⃣ Refresh Token
+---
 
-Access token expires → frontend calls User Service via API Gateway
+## Inter-Service Calls (Sync REST)
 
-User Service validates refresh token → issues new access token
+- **Product Service → Media Service:** validate that imageIds exist before attaching
+- **User Service → Media Service:** upload avatar and get back a URL
 
-5️⃣ Social Login Details
+Use `WebClient` (non-blocking) or `RestTemplate` for service-to-service calls.
 
-User Service handles OAuth2 with providers (Google, Facebook):
+---
 
-Receives authorization code from frontend
+## Code Conventions
 
-Exchanges code with provider → gets user profile
+- Java: use records for DTOs, `@Valid` on request bodies, constructor injection
+- No field injection (`@Autowired` on fields) — use constructor injection only
+- Angular: standalone components, typed HttpClient responses, interceptor for JWT
+- MongoDB: use `@Document`, `ObjectId` for ids, never expose `_id` raw — map to `id`
+- Always validate ownership in the **service layer**, not just the controller
 
-Creates / links local user
+---
 
-Issues JWT token for your system
+## Build Order (if starting fresh)
 
-API Gateway does not care which login method was used — it validates JWT the same way.
+1. User Service (auth + JWT)
+2. Product Service
+3. Media Service
+4. API Gateway (wire everything together)
+5. Kafka events (after everything above works)
 
-project-root/
-│
-├── angular-frontend/
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── auth/
-│   │   │   │   ├── login/
-│   │   │   │   ├── signup/
-│   │   │   │   ├── social-login/
-│   │   │   │   ├── auth.service.ts
-│   │   │   │   └── auth.guard.ts
-│   │   │   │
-│   │   │   ├── product/
-│   │   │   │   ├── product-list/
-│   │   │   │   ├── product-create/
-│   │   │   │   └── product.service.ts
-│   │   │   │
-│   │   │   ├── media/
-│   │   │   │   ├── media-upload/
-│   │   │   │   └── media.service.ts
-│   │   │   │
-│   │   │   ├── shared/
-│   │   │   │   ├── components/
-│   │   │   │   ├── directives/
-│   │   │   │   ├── models/
-│   │   │   │   └── services/
-│   │   │   │
-│   │   │   ├── app-routing.module.ts
-│   │   │   └── app.module.ts
-│   │   └── assets/
-│   │       └── images/
-│   └── package.json
-│
-├── api-gateway/
-│   ├── src/main/java/com/example/apigateway/
-│   │   ├── config/
-│   │   │   ├── SecurityConfig.java        # JWT validation, role-based routing
-│   │   │   └── RouteConfig.java           # Spring Cloud Gateway routes
-│   │   ├── filters/
-│   │   │   └── JwtAuthFilter.java
-│   │   └── ApiGatewayApplication.java
-│   └── pom.xml
-│
-├── user-service/
-│   ├── src/main/java/com/example/userservice/
-│   │   ├── config/
-│   │   │   ├── SecurityConfig.java        # JWT signing, CORS
-│   │   │   └── OAuth2Config.java          # Google/Facebook OAuth
-│   │   ├── controller/
-│   │   │   ├── AuthController.java        # login, signup, refresh token
-│   │   │   └── UserController.java       # profile, user management
-│   │   ├── service/
-│   │   │   ├── AuthService.java
-│   │   │   ├── JwtService.java
-│   │   │   └── SocialLoginService.java
-│   │   ├── repository/
-│   │   │   └── UserRepository.java
-│   │   ├── model/
-│   │   │   ├── User.java
-│   │   │   └── Role.java
-│   │   └── UserServiceApplication.java
-│   └── pom.xml
-│
-├── product-service/
-│   ├── src/main/java/com/example/productservice/
-│   │   ├── controller/
-│   │   │   └── ProductController.java
-│   │   ├── service/
-│   │   │   └── ProductService.java
-│   │   ├── repository/
-│   │   │   └── ProductRepository.java
-│   │   ├── model/
-│   │   │   └── Product.java
-│   │   └── ProductServiceApplication.java
-│   └── pom.xml
-│
-├── media-service/
-│   ├── src/main/java/com/example/mediaservice/
-│   │   ├── controller/
-│   │   │   └── MediaController.java
-│   │   ├── service/
-│   │   │   └── MediaService.java
-│   │   ├── repository/
-│   │   │   └── MediaRepository.java      # if storing metadata
-│   │   ├── model/
-│   │   │   └── MediaFile.java
-│   │   └── MediaServiceApplication.java
-│   └── pom.xml
-│
-├── docker-compose.yml
-├── README.md
-└── scripts/
-    ├── start-dev.sh
-    └── stop-dev.sh
+---
+
+## Gotchas
+
+- `spring-boot-starter-web` and `spring-cloud-gateway` conflict — Gateway must use **reactive** stack (`spring-boot-starter-webflux`), not servlet stack
+- MongoDB `ObjectId` serializes as `{ "$oid": "..." }` in some drivers — configure Jackson to serialize as plain string
+- File MIME validation: use Apache Tika or check magic bytes, not `file.getContentType()` (it trusts the client)
+- JWT secret must be the same across all services — externalise to env var `JWT_SECRET`
+- Angular interceptor must handle 401 responses and redirect to login
+
+---
+
+## Environment Variables Expected
+
+```
+JWT_SECRET=<shared-secret-min-32-chars>
+MONGODB_URI_USER=mongodb://localhost:27017/userdb
+MONGODB_URI_PRODUCT=mongodb://localhost:27017/productdb
+MONGODB_URI_MEDIA=mongodb://localhost:27017/mediadb
+UPLOAD_DIR=./uploads          # local storage path
+```
