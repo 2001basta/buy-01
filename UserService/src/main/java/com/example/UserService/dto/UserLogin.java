@@ -1,6 +1,9 @@
 package com.example.UserService.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 public record UserLogin(
-    String email,
-    String password
+        @NotBlank @Email String email,
+        @NotBlank String password
 ) {}

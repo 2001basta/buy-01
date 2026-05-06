@@ -1,0 +1,39 @@
+server:
+  port: 8080
+
+jwt:
+  secret: ${JWT_SECRET:mySuperSecretKeyForTheMarketplace01}
+
+spring:
+  cloud:
+    gateway:
+      routes:
+
+        - id: auth-public
+          uri: lb://UserService
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - RewritePath=/api/auth/(?<segment>.*), /users/${segment}
+
+        - id: user-service
+          uri: lb://UserService
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - JwtAuthFilter
+            - RewritePath=/api/users/(?<segment>.*), /users/${segment}
+
+        - id: product-service
+          uri: lb://ProductService
+          predicates:
+            - Path=/api/products/**
+          filters:
+            - JwtAuthFilter
+
+        - id: media-service
+          uri: lb://MediaService
+          predicates:
+            - Path=/api/media/**
+          filters:
+            - JwtAuthFilter

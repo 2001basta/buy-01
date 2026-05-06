@@ -4,7 +4,7 @@ import com.example.UserService.entity.User;
 import com.example.UserService.outils.Role;
 import com.example.UserService.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -16,23 +16,24 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
 
-    public String signup(String name, String email, String password) {
+    public String signup(String name, String email, String password, Role role) {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
+
+        Role assignedRole = (role != null) ? role : Role.CLIENT;
 
         User user = User.builder()
                 .name(name)
                 .email(email)
                 .password(passwordEncoder.encode(password))
-                .roles(Collections.singleton(Role.CLIENT))
+                .roles(Collections.singleton(assignedRole))
                 .provider("NORMAL")
                 .build();
 
         userRepository.save(user);
-
         return jwtService.generateToken(user.getId(), user.getRoles());
     }
 

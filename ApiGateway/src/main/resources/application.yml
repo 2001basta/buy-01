@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: ApiGateway
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
+  cloud:
+    gateway:
+      # Routes below are local fallback.
+      # When Config Server is available, ApiGateway.yml in ConfigService overrides them
+      # and uses lb:// URIs resolved via Eureka.
+      routes:
+
+        # ── Public: signup & login (no JWT required) ─────────────────────────
+        - id: auth-public
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - RewritePath=/api/auth/(?<segment>.*), /users/${segment}
+
+        # ── Protected: user profile endpoints ────────────────────────────────
+        - id: user-service
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - JwtAuthFilter
+            - RewritePath=/api/users/(?<segment>.*), /users/${segment}
+
+        # ── Protected: product CRUD ───────────────────────────────────────────
+        - id: product-service
+          uri: ${PRODUCT_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/products/**
+          filters:
+            - JwtAuthFilter
+
+        # ── Protected: media upload / serve / delete ──────────────────────────
+        - id: media-service
+          uri: ${MEDIA_SERVICE_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/media/**
+          filters:
+            - JwtAuthFilter
+
+server:
+  port: 8080
+
+jwt:
+  secret: ${JWT_SECRET:mySuperSecretKeyForTheMarketplace01}
+
+# Eureka (fallback if Config Server unavailable)
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${MANAGEMENT_ZIPKIN_TRACING_ENDPOINT:http://localhost:9411/api/v2/spans}

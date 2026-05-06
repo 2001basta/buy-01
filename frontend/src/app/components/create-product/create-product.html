@@ -1,0 +1,35 @@
+<div class="page">
+  <div class="header">
+    <h1>{{ isEdit ? 'Edit Product' : 'New Product' }}</h1>
+    <a routerLink="/seller/dashboard" class="back">← Dashboard</a>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form-card">
+    <div class="field">
+      <label>Name *</label>
+      <input type="text" formControlName="name" placeholder="Product name" />
+    </div>
+    <div class="field">
+      <label>Description *</label>
+      <textarea formControlName="description" rows="4" placeholder="Describe your product"></textarea>
+    </div>
+    <div class="field">
+      <label>Price ($) *</label>
+      <input type="number" formControlName="price" step="0.01" min="0.01" placeholder="0.00" />
+    </div>
+    <div class="field">
+      <label>Images <span class="hint">(JPEG or PNG, max 2MB each)</span></label>
+      <input type="file" accept="image/jpeg,image/png" multiple (change)="onFileChange($event)" />
+      <p *ngIf="pendingFiles.length" class="file-count">{{ pendingFiles.length }} file(s) selected</p>
+    </div>
+
+    <p class="error" *ngIf="error">{{ error }}</p>
+
+    <div class="form-actions">
+      <button type="submit" [disabled]="saving || uploading">
+        {{ uploading ? 'Uploading images...' : saving ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Product' }}
+      </button>
+      <a routerLink="/seller/dashboard" class="btn-cancel">Cancel</a>
+    </div>
+  </form>
+</div>

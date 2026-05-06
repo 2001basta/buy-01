@@ -1,0 +1,25 @@
+<div class="page">
+  <a routerLink="/products" class="back">← Back to products</a>
+
+  <p *ngIf="loading" class="state">Loading...</p>
+  <p *ngIf="error" class="state error">{{ error }}</p>
+
+  <div *ngIf="product" class="detail">
+    <div class="images">
+      <img *ngFor="let id of product.imageIds"
+           [src]="mediaService.getUrl(id)" [alt]="product.name" />
+      <div *ngIf="!product.imageIds.length" class="placeholder">No images</div>
+    </div>
+
+    <div class="info">
+      <h1>{{ product.name }}</h1>
+      <p class="price">${{ product.price | number:'1.2-2' }}</p>
+      <p class="desc">{{ product.description }}</p>
+
+      <div class="owner-actions" *ngIf="auth.isSeller()">
+        <a [routerLink]="['/seller/products/edit', product.id]" class="btn-secondary">Edit</a>
+        <button (click)="delete()" class="btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
