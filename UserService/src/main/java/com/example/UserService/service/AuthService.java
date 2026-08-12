@@ -39,11 +39,11 @@ public class AuthService {
 
     public String login(String email, String password) {
         Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isEmpty()) throw new RuntimeException("User not found");
+        if (userOpt.isEmpty()) throw new RuntimeException("Invalid credentials");
 
         User user = userOpt.get();
         if (!passwordEncoder.matches(password, user.getPassword()))
-            throw new RuntimeException("Invalid password");
+            throw new RuntimeException("Invalid credentials");
 
         return jwtService.generateToken(user.getId(), user.getRoles());
     }

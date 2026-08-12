@@ -34,7 +34,7 @@ public class MediaService {
 
     private final MediaRepository mediaRepository;
 
-    @Value("${upload.dir}")
+    @Value("${media.storage.path}")
     private String uploadDir;
 
     public MediaResponse upload(MultipartFile file, String ownerId, String productId) throws IOException {
@@ -97,9 +97,23 @@ public class MediaService {
         mediaRepository.delete(media);
     }
 
-    public boolean allExist(List<String> ids) {
+    public boolean allExist(List<String> ids, String ownerId) {
         List<Media> found = mediaRepository.findAllById(ids);
-        return found.size() == ids.size();
+        return found.size() == ids.size()
+                && found.stream().allMatch(m -> m.getOwnerId().equals(ownerId));
+    }
+
+    // Best-effort cleanup triggered by a product-deletion event: no owner to check
+    // against here, and a missing/already-gone media id is not an error.
+    public void deleteAll(List<String> ids) {
+        List<Media> found = mediaRepository.findAllById(ids);
+        for (Media media : found) {
+            try {
+                Files.deleteIfExists(Paths.get(media.getStoragePath()));
+            } catch (IOException ignored) {
+            }
+        }
+        mediaRepository.deleteAll(found);
     }
 
     private Media findOrThrow(String id) {

@@ -1,6 +1,6 @@
 <div class="page">
   <div class="header">
-    <h1>{{ isEdit ? 'Edit Product' : 'New Product' }}</h1>
+    <h1>{{ isEdit() ? 'Edit Product' : 'New Product' }}</h1>
     <a routerLink="/seller/dashboard" class="back">← Dashboard</a>
   </div>
 
@@ -20,14 +20,14 @@
     <div class="field">
       <label>Images <span class="hint">(JPEG or PNG, max 2MB each)</span></label>
       <input type="file" accept="image/jpeg,image/png" multiple (change)="onFileChange($event)" />
-      <p *ngIf="pendingFiles.length" class="file-count">{{ pendingFiles.length }} file(s) selected</p>
+      <p *ngIf="pendingFiles().length" class="file-count">{{ pendingFiles().length }} file(s) selected</p>
     </div>
 
-    <p class="error" *ngIf="error">{{ error }}</p>
+    <p class="error" *ngIf="error()">{{ error() }}</p>
 
     <div class="form-actions">
-      <button type="submit" [disabled]="saving || uploading">
-        {{ uploading ? 'Uploading images...' : saving ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Product' }}
+      <button type="submit" [disabled]="saving() || uploading()">
+        {{ uploading() ? 'Uploading images...' : saving() ? 'Saving...' : isEdit() ? 'Save Changes' : 'Create Product' }}
       </button>
       <a routerLink="/seller/dashboard" class="btn-cancel">Cancel</a>
     </div>

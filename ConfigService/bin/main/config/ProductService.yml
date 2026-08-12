@@ -1,0 +1,32 @@
+server:
+  port: 8082
+
+spring:
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/productdb}
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+media:
+  service:
+    url: ${MEDIA_SERVICE_URL:http://localhost:8083}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      mediaService:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        wait-duration-in-open-state: 30s
+        failure-rate-threshold: 50
+
+management:
+  health:
+    circuitbreakers:
+      enabled: true

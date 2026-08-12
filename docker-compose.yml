@@ -1,6 +1,6 @@
 services:
 
-  # ── Database ──────────────────────────────────────────────────────────────
+  # Database
   mongodb:
     image: mongo:7
     ports:
@@ -14,7 +14,7 @@ services:
       retries: 5
       start_period: 10s
 
-  # ── Message Broker (KRaft — no Zookeeper) ─────────────────────────────────
+  # Message Broker (KRaft — no Zookeeper)
   kafka:
     image: bitnami/kafka:3.7
     ports:
@@ -35,13 +35,13 @@ services:
       retries: 5
       start_period: 30s
 
-  # ── Distributed Tracing ───────────────────────────────────────────────────
+  # Distributed Tracing
   zipkin:
     image: openzipkin/zipkin:3
     ports:
       - "9411:9411"
 
-  # ── Config Server (starts before all business services) ───────────────────
+  # Config Server (starts before all business services)
   config-server:
     build: ./ConfigService
     ports:
@@ -53,7 +53,7 @@ services:
       retries: 5
       start_period: 40s
 
-  # ── Discovery / Eureka Server ─────────────────────────────────────────────
+  # Discovery / Eureka Server
   discovery-service:
     build: ./DiscoveryService
     ports:
@@ -68,7 +68,7 @@ services:
       config-server:
         condition: service_healthy
 
-  # ── Business Services ──────────────────────────────────────────────────────
+  # Business Services
   user-service:
     build: ./UserService
     ports:

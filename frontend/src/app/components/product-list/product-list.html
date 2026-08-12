@@ -14,11 +14,11 @@
     </div>
   </div>
 
-  <p *ngIf="loading" class="state">Loading...</p>
-  <p *ngIf="error" class="state error">{{ error }}</p>
+  <p *ngIf="loading()" class="state">Loading...</p>
+  <p *ngIf="error()" class="state error">{{ error() }}</p>
 
-  <div class="grid" *ngIf="!loading && !error">
-    <a *ngFor="let p of products" [routerLink]="['/products', p.id]" class="card">
+  <div class="grid" *ngIf="!loading() && !error()">
+    <a *ngFor="let p of products()" [routerLink]="['/products', p.id]" class="card">
       <div class="card-image">
         <img *ngIf="p.imageIds.length" [src]="mediaService.getUrl(p.imageIds[0])" [alt]="p.name" />
         <div *ngIf="!p.imageIds.length" class="placeholder">No image</div>
@@ -29,6 +29,6 @@
         <p class="price">${{ p.price | number:'1.2-2' }}</p>
       </div>
     </a>
-    <p *ngIf="products.length === 0" class="state">No products yet.</p>
+    <p *ngIf="products().length === 0" class="state">No products yet.</p>
   </div>
 </div>

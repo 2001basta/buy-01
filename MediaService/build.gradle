@@ -2,7 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.11'
 	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.graalvm.buildtools.native' version '0.10.6'
+	// id 'org.graalvm.buildtools.native' version '0.10.6'
 }
 
 group = 'com.example'
@@ -36,6 +36,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.apache.tika:tika-core:2.9.2'
+	implementation 'org.springframework.kafka:spring-kafka'
 	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
 	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'

@@ -17,24 +17,25 @@ public class MediaServiceClient {
     private final String mediaServiceUrl;
 
     public MediaServiceClient(RestTemplate restTemplate,
-                              @Value("${media.service.url}") String mediaServiceUrl) {
+                              @Value("lb://MediaService") String mediaServiceUrl) {
         this.restTemplate = restTemplate;
         this.mediaServiceUrl = mediaServiceUrl;
     }
 
     @CircuitBreaker(name = "mediaService", fallbackMethod = "allExistFallback")
     @SuppressWarnings("unchecked")
-    public boolean allExist(List<String> imageIds) {
+    public boolean allExist(List<String> imageIds, String ownerId) {
         String url = UriComponentsBuilder
                 .fromUriString(mediaServiceUrl + "/api/media/exists")
                 .queryParam("ids", imageIds)
+                .queryParam("ownerId", ownerId)
                 .toUriString();
 
         Map<String, Boolean> response = restTemplate.getForObject(url, Map.class);
         return response != null && Boolean.TRUE.equals(response.get("allExist"));
     }
 
-    public boolean allExistFallback(List<String> imageIds, Exception ex) {
+    public boolean allExistFallback(List<String> imageIds, String ownerId, Exception ex) {
         throw new ServiceUnavailableException("Media service is unavailable — cannot validate images");
     }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, WritableSignal, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product.service';
@@ -13,9 +13,9 @@ import { Product } from '../../models/product.model';
   styleUrl: './product-detail.scss'
 })
 export class ProductDetailComponent implements OnInit {
-  product: Product | null = null;
-  loading = true;
-  error = '';
+  product: WritableSignal<Product | null> = signal(null);
+  loading = signal(true);
+  error = signal('');
 
   constructor(
     private route: ActivatedRoute,
@@ -28,14 +28,14 @@ export class ProductDetailComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.productService.getById(id).subscribe({
-      next: p => { this.product = p; this.loading = false; },
-      error: () => { this.error = 'Product not found'; this.loading = false; }
+      next: p => { this.product.set(p); this.loading.set(false); },
+      error: () => { this.error.set('Product not found'); this.loading.set(false); }
     });
   }
 
   delete(): void {
-    if (!this.product || !confirm('Delete this product?')) return;
-    this.productService.delete(this.product.id).subscribe({
+    if (!this.product() || !confirm('Delete this product?')) return;
+    this.productService.delete(this.product()!.id).subscribe({
       next: () => this.router.navigate(['/products']),
       error: () => alert('Failed to delete product')
     });

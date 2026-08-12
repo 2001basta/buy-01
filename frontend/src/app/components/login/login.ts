@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -12,8 +12,8 @@ import { AuthService } from '../../services/auth.service';
 })
 export class LoginComponent {
   form: FormGroup;
-  error = '';
-  loading = false;
+  error = signal('');
+  loading = signal(false);
 
   constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
     this.form = this.fb.group({
@@ -24,13 +24,13 @@ export class LoginComponent {
 
   submit(): void {
     if (this.form.invalid) return;
-    this.loading = true;
-    this.error = '';
+    this.loading.set(true);
+    this.error.set('');
     this.auth.login(this.form.value).subscribe({
       next: () => this.router.navigate(['/products']),
       error: err => {
-        this.error = err.error?.message ?? 'Login failed';
-        this.loading = false;
+        this.error.set(err.error?.message ?? 'Login failed');
+        this.loading.set(false);
       }
     });
   }

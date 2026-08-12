@@ -95,8 +95,8 @@ public class ProductService {
         Product product = findOrThrow(id);
         requireOwner(product.getSellerId(), currentUserId);
 
-        if (!mediaServiceClient.allExist(req.imageIds())) {
-            throw new NotFoundException("One or more imageIds do not exist");
+        if (!mediaServiceClient.allExist(req.imageIds(), currentUserId)) {
+            throw new NotFoundException("One or more imageIds do not exist or are not owned by you");
         }
 
         product.getImageIds().addAll(req.imageIds());

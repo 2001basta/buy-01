@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, WritableSignal, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product.service';
@@ -13,9 +13,9 @@ import { Product } from '../../models/product.model';
   styleUrl: './product-list.scss'
 })
 export class ProductListComponent implements OnInit {
-  products: Product[] = [];
-  loading = true;
-  error = '';
+  products: WritableSignal<Product[]> = signal([]);
+  loading = signal(true);
+  error = signal('');
 
   constructor(
     private productService: ProductService,
@@ -25,8 +25,8 @@ export class ProductListComponent implements OnInit {
 
   ngOnInit(): void {
     this.productService.getAll().subscribe({
-      next: products => { this.products = products; this.loading = false; },
-      error: () => { this.error = 'Failed to load products'; this.loading = false; }
+      next: products => { this.products.set(products); this.loading.set(false); },
+      error: () => { this.error.set('Failed to load products'); this.loading.set(false); }
     });
   }
 }

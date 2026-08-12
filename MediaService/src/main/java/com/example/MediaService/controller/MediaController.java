@@ -47,9 +47,9 @@ public class MediaController {
         mediaService.delete(id, userId);
     }
 
-    // Called by ProductService to validate imageIds before attaching them.
+    // Called by ProductService to validate imageIds exist and are owned by the requesting seller before attaching them.
     @GetMapping("/exists")
-    public Map<String, Boolean> exists(@RequestParam List<String> ids) {
-        return Map.of("allExist", mediaService.allExist(ids));
+    public Map<String, Boolean> exists(@RequestParam List<String> ids, @RequestParam String ownerId) {
+        return Map.of("allExist", mediaService.allExist(ids, ownerId));
     }
 }

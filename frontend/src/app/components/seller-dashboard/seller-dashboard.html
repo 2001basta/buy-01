@@ -4,10 +4,10 @@
     <a routerLink="/seller/products/create" class="btn-primary">+ New Product</a>
   </div>
 
-  <p *ngIf="loading" class="state">Loading...</p>
-  <p *ngIf="error" class="state error">{{ error }}</p>
+  <p *ngIf="loading()" class="state">Loading...</p>
+  <p *ngIf="error()" class="state error">{{ error() }}</p>
 
-  <table *ngIf="!loading && products.length">
+  <table *ngIf="!loading() && products().length">
     <thead>
       <tr>
         <th>Image</th>
@@ -17,7 +17,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let p of products">
+      <tr *ngFor="let p of products()">
         <td>
           <img *ngIf="p.imageIds.length" [src]="mediaService.getUrl(p.imageIds[0])" [alt]="p.name" class="thumb" />
           <span *ngIf="!p.imageIds.length" class="no-img">—</span>
@@ -32,7 +32,7 @@
     </tbody>
   </table>
 
-  <p *ngIf="!loading && !products.length" class="state">
+  <p *ngIf="!loading() && !products().length" class="state">
     No products yet. <a routerLink="/seller/products/create">Create one!</a>
   </p>
 </div>

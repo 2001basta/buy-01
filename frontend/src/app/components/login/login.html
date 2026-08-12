@@ -10,10 +10,10 @@
         <label>Password</label>
         <input type="password" formControlName="password" placeholder="••••••••" />
       </div>
-      <p class="error" *ngIf="error">{{ error }}</p>
-      <button type="submit" [disabled]="loading">
-        {{ loading ? 'Logging in...' : 'Login' }}
+      <button type="submit" [disabled]="loading()">
+        {{ loading() ? 'Logging in...' : 'Login' }}
       </button>
+      <p class="error" *ngIf="error">{{ error() }}</p>
     </form>
     <p class="link">Don't have an account? <a routerLink="/auth/signup">Sign up</a></p>
   </div>

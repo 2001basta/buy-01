@@ -10,15 +10,16 @@ spring:
       # and uses lb:// URIs resolved via Eureka.
       routes:
 
-        # ── Public: signup & login (no JWT required) ─────────────────────────
+        # Public: signup & login (no JWT required)
         - id: auth-public
+          # in this uri we can write "uri: lb://UserService", eurka will find the ip
           uri: ${USER_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/api/auth/**
           filters:
             - RewritePath=/api/auth/(?<segment>.*), /users/${segment}
 
-        # ── Protected: user profile endpoints ────────────────────────────────
+        # Protected: user profile endpoints
         - id: user-service
           uri: ${USER_SERVICE_URL:http://localhost:8081}
           predicates:
@@ -27,7 +28,7 @@ spring:
             - JwtAuthFilter
             - RewritePath=/api/users/(?<segment>.*), /users/${segment}
 
-        # ── Protected: product CRUD ───────────────────────────────────────────
+        # Protected: product CRUD
         - id: product-service
           uri: ${PRODUCT_SERVICE_URL:http://localhost:8082}
           predicates:
@@ -35,7 +36,14 @@ spring:
           filters:
             - JwtAuthFilter
 
-        # ── Protected: media upload / serve / delete ──────────────────────────
+        # Public: serve/view media files (like a CDN link — <img src> can't attach a JWT)
+        - id: media-public-serve
+          uri: ${MEDIA_SERVICE_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/media/**
+            - Method=GET
+
+        # Protected: media upload / delete
         - id: media-service
           uri: ${MEDIA_SERVICE_URL:http://localhost:8083}
           predicates:
