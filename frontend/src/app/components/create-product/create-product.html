@@ -1,26 +1,47 @@
 <div class="page">
   <div class="header">
-    <h1>{{ isEdit() ? 'Edit Product' : 'New Product' }}</h1>
-    <a routerLink="/seller/dashboard" class="back">← Dashboard</a>
+    <div><p class="eyebrow">SELLER STUDIO</p><h1>{{ isEdit() ? 'Edit Product' : 'New Product' }}</h1><p class="header-note">Give your next great find a place to shine.</p></div>
+    <div class="header-actions">
+      <a routerLink="/seller/dashboard" class="back">← Dashboard</a>
+      <button type="button" class="btn-logout" (click)="auth.logout()">↪ Logout</button>
+    </div>
   </div>
 
   <form [formGroup]="form" (ngSubmit)="submit()" class="form-card">
+    <div class="form-section-title"><span>01</span><div><h2>Product basics</h2><p>Tell shoppers what makes this item special.</p></div></div>
     <div class="field">
       <label>Name *</label>
       <input type="text" formControlName="name" placeholder="Product name" />
+      <small class="field-error" *ngIf="form.controls['name'].touched && form.controls['name'].hasError('required')">Product name is required.</small>
     </div>
     <div class="field">
       <label>Description *</label>
       <textarea formControlName="description" rows="4" placeholder="Describe your product"></textarea>
+      <small class="field-error" *ngIf="form.controls['description'].touched && form.controls['description'].hasError('required')">Description is required.</small>
     </div>
     <div class="field">
       <label>Price ($) *</label>
       <input type="number" formControlName="price" step="0.01" min="0.01" placeholder="0.00" />
+      <small class="field-error" *ngIf="form.controls['price'].touched && form.controls['price'].hasError('required')">Price is required.</small>
+      <small class="field-error" *ngIf="form.controls['price'].touched && form.controls['price'].hasError('min')">Price must be greater than 0.</small>
     </div>
     <div class="field">
-      <label>Images <span class="hint">(JPEG or PNG, max 2MB each)</span></label>
+      <div class="upload-heading"><span class="upload-icon">✦</span><div><label>Product photos</label><p class="hint">Clear images help your product get noticed.</p></div></div>
+      <div class="preview-grid existing-previews" *ngIf="existingImageIds().length">
+        <div class="preview" *ngFor="let imageId of existingImageIds()">
+          <img [src]="mediaService.getUrl(imageId)" alt="Current product image" />
+          <button type="button" (click)="removeExistingImage(imageId)" aria-label="Remove current image">×</button>
+        </div>
+      </div>
       <input type="file" accept="image/jpeg,image/png" multiple (change)="onFileChange($event)" />
       <p *ngIf="pendingFiles().length" class="file-count">{{ pendingFiles().length }} file(s) selected</p>
+      <p *ngIf="fileError()" class="field-error">{{ fileError() }}</p>
+      <div class="preview-grid" *ngIf="previews().length">
+        <div class="preview" *ngFor="let preview of previews(); let i = index">
+          <img [src]="preview" alt="Selected product preview" />
+          <button type="button" (click)="removeFile(i)" aria-label="Remove selected image">×</button>
+        </div>
+      </div>
     </div>
 
     <p class="error" *ngIf="error()">{{ error() }}</p>

@@ -1,13 +1,19 @@
 <div class="page">
   <div class="header">
-    <h1>My Products</h1>
-    <a routerLink="/seller/products/create" class="btn-primary">+ New Product</a>
+    <div><p class="eyebrow">SELLER STUDIO</p><h1>My Products</h1><p class="header-note">Keep your catalog fresh and easy to find.</p></div>
+    <div class="header-actions">
+      <a routerLink="/products" class="btn-secondary">Marketplace</a>
+      <a routerLink="/seller/products/create" class="btn-primary">+ New Product</a>
+      <button type="button" class="btn-logout" (click)="auth.logout()">↪ Logout</button>
+    </div>
   </div>
+
+  <div class="dashboard-strip"><div><span class="strip-icon">✦</span><strong>Your storefront</strong><small>Live and ready for shoppers</small></div><span class="live-dot">● Live</span></div>
 
   <p *ngIf="loading()" class="state">Loading...</p>
   <p *ngIf="error()" class="state error">{{ error() }}</p>
 
-  <table *ngIf="!loading() && products().length">
+  <div class="table-wrap" *ngIf="!loading() && products().length"><table>
     <thead>
       <tr>
         <th>Image</th>
@@ -30,7 +36,7 @@
         </td>
       </tr>
     </tbody>
-  </table>
+  </table></div>
 
   <p *ngIf="!loading() && !products().length" class="state">
     No products yet. <a routerLink="/seller/products/create">Create one!</a>

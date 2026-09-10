@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { ProductService } from '../../services/product.service';
 import { MediaService } from '../../services/media.service';
 import { Product } from '../../models/product.model';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-create-product',
@@ -13,12 +14,17 @@ import { Product } from '../../models/product.model';
   styleUrl: './create-product.scss'
 })
 export class CreateProductComponent implements OnInit {
+  private readonly maxFileSize = 2 * 1024 * 1024;
+  private readonly allowedTypes = new Set(['image/jpeg', 'image/png']);
   form: FormGroup;
   product: WritableSignal<Product | null> = signal(null);
   pendingFiles: WritableSignal<File[]> = signal([]);
   uploading = signal(false);
   saving = signal(false);
   error = signal('');
+  fileError = signal('');
+  previews = signal<string[]>([]);
+  existingImageIds = signal<string[]>([]);
   isEdit = signal(false);
 
   constructor(
@@ -26,7 +32,8 @@ export class CreateProductComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private productService: ProductService,
-    private mediaService: MediaService
+    public mediaService: MediaService,
+    public auth: AuthService
   ) {
     this.form = this.fb.group({
       name: ['', Validators.required],
@@ -40,7 +47,7 @@ export class CreateProductComponent implements OnInit {
     if (id) {
       this.isEdit.set(true);
       this.productService.getById(id).subscribe({
-        next: p => { this.product.set(p); this.form.patchValue(p); },
+        next: p => { this.product.set(p); this.existingImageIds.set(p.imageIds); this.form.patchValue(p); },
         error: () => this.error.set('Failed to load product')
       });
     }
@@ -48,11 +55,47 @@ export class CreateProductComponent implements OnInit {
 
   onFileChange(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files) this.pendingFiles.set(Array.from(input.files));
+    this.fileError.set('');
+    this.previews().forEach(url => URL.revokeObjectURL(url));
+    const files = Array.from(input.files ?? []);
+    const invalid = files.find(file => !this.allowedTypes.has(file.type) || file.size > this.maxFileSize);
+    if (invalid) {
+      this.pendingFiles.set([]);
+      this.previews.set([]);
+      this.fileError.set(`${invalid.name} must be a JPEG or PNG image no larger than 2 MB.`);
+      input.value = '';
+      return;
+    }
+    this.pendingFiles.set(files);
+    this.previews.set(files.map(file => URL.createObjectURL(file)));
+  }
+
+  removeFile(index: number): void {
+    const urls = this.previews();
+    if (urls[index]) URL.revokeObjectURL(urls[index]);
+    this.pendingFiles.update(files => files.filter((_, fileIndex) => fileIndex !== index));
+    this.previews.update(items => items.filter((_, previewIndex) => previewIndex !== index));
+  }
+
+  removeExistingImage(imageId: string): void {
+    if (!this.product()) return;
+    this.mediaService.delete(imageId).subscribe({
+      next: () => {
+        const remaining = this.existingImageIds().filter(id => id !== imageId);
+        this.productService.attachImages(this.product()!.id, remaining).subscribe({
+          next: () => this.existingImageIds.set(remaining),
+          error: () => this.error.set('Image removed from storage but product update failed')
+        });
+      },
+      error: err => this.error.set(err.error?.message ?? 'Unable to remove image')
+    });
   }
 
   submit(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid || this.fileError()) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.saving.set(true);
     this.error.set('');
 
@@ -75,20 +118,36 @@ export class CreateProductComponent implements OnInit {
       return;
     }
     this.uploading.set(true);
-    const uploads = this.pendingFiles().map(f =>
-      this.mediaService.upload(f, productId).toPromise()
+    const uploads = this.pendingFiles().map(file =>
+      this.mediaService.upload(file, productId).toPromise()
     );
 
-    Promise.all(uploads).then(results => {
-      const imageIds = results.map(r => r!.id);
+    Promise.allSettled(uploads).then(results => {
+      const imageIds = results
+        .filter(result => result.status === 'fulfilled')
+        .map(result => result.value?.id)
+        .filter((id): id is string => !!id);
+      const failed = results.some(result => result.status === 'rejected');
+      if (failed) {
+        this.cleanupMedia(imageIds);
+        this.error.set('Some images could not be uploaded. Please check each file is a JPEG or PNG under 2 MB.');
+        this.saving.set(false);
+        this.uploading.set(false);
+        return;
+      }
       this.productService.attachImages(productId, imageIds).subscribe({
         next: () => this.router.navigate(['/seller/dashboard']),
-        error: () => { this.error.set('Product saved but image attach failed'); this.saving.set(false); }
+        error: () => {
+          this.cleanupMedia(imageIds);
+          this.error.set('Product saved but image attach failed. You can retry from Edit Product.');
+          this.saving.set(false);
+          this.uploading.set(false);
+        }
       });
-    }).catch(() => {
-      this.error.set('Image upload failed (check size ≤ 2MB, jpeg/png only)');
-      this.saving.set(false);
-      this.uploading.set(false);
     });
+  }
+
+  private cleanupMedia(imageIds: string[]): void {
+    imageIds.forEach(id => this.mediaService.delete(id).subscribe({ error: () => undefined }));
   }
 }

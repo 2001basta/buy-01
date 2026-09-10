@@ -1,34 +1,60 @@
-.page { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+.page { max-width: 1080px; margin: 0 auto; padding: 3.5rem 1.5rem 5rem; }
 
 .header {
   display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;
-  h1 { font-size: 1.5rem; }
+  h1 { margin: 0; font-size: clamp(2rem, 4vw, 3rem); }
+  .eyebrow { margin: 0 0 .5rem; color: var(--teal-dark); font-size: .7rem; font-weight: 700; letter-spacing: .16em; }
+  .header-note { margin: .5rem 0 0; color: var(--ink-soft); font-size: .88rem; }
 }
 
+.header-actions { display: flex; align-items: center; gap: .65rem; flex-wrap: wrap; }
+.btn-secondary, .btn-logout { padding: .7rem .9rem; border: 0; border-radius: 3px; font-size: .8rem; font-weight: 700; text-decoration: none; cursor: pointer; }
+.btn-secondary { background: #e6ece9; color: var(--navy); }
+.btn-logout { background: transparent; color: var(--ink-soft); }
+.btn-logout:hover { color: var(--danger); }
+
+.dashboard-strip { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding: 1rem 1.15rem; border: 1px solid #cfe2d7; border-radius: 4px; background: #edf7ef; }
+.dashboard-strip > div { display: flex; align-items: center; gap: .7rem; }
+.strip-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--citrus); color: var(--navy-deep); }
+.dashboard-strip strong, .dashboard-strip small { display: block; }
+.dashboard-strip strong { color: var(--navy); font-size: .9rem; }
+.dashboard-strip small { margin-top: .15rem; color: var(--ink-soft); font-size: .75rem; }
+.live-dot { color: var(--teal-dark); font-size: .78rem; font-weight: 700; }
+.table-wrap { overflow-x: auto; border-radius: 4px; }
+
 .btn-primary {
-  background: #4f46e5; color: #fff; padding: .5rem 1rem; border-radius: 4px;
-  text-decoration: none; font-size: .875rem;
-  &:hover { background: #4338ca; }
+  background: var(--navy); color: #fff; padding: .7rem 1rem; border-radius: 3px;
+  text-decoration: none; font-size: .875rem; transition: background .2s ease, transform .2s ease;
+  &:hover { background: var(--teal); transform: translateY(-2px); }
 }
 
 table {
-  width: 100%; border-collapse: collapse;
-  th, td { padding: .75rem 1rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
-  th { font-size: .75rem; text-transform: uppercase; color: #6b7280; }
+  width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 4px; overflow: hidden;
+  th, td { padding: 1rem 1.15rem; text-align: left; border-bottom: 1px solid var(--line); }
+  th { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); background: #eef3ef; }
+  tr:last-child td { border-bottom: 0; }
+  tbody tr { transition: background .2s ease; &:hover { background: #fbfcfa; } }
 }
 
-.thumb { width: 48px; height: 48px; object-fit: cover; border-radius: 4px; }
-.no-img { color: #9ca3af; }
+.thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 3px; }
+.no-img { color: var(--muted); }
 
 .row-actions { display: flex; gap: .5rem; }
 .btn-edit, .btn-delete {
-  padding: .35rem .75rem; border-radius: 4px; font-size: .8rem; cursor: pointer; border: none;
+  padding: .45rem .75rem; border-radius: 3px; font-size: .8rem; cursor: pointer; border: none;
   text-decoration: none;
 }
-.btn-edit   { background: #e5e7eb; color: #374151; }
-.btn-delete { background: #fee2e2; color: #dc2626; &:hover { background: #fecaca; } }
+.btn-edit   { background: #e6ece9; color: var(--navy); }
+.btn-delete { background: #f8e4e0; color: var(--danger); &:hover { background: #f2d0c9; } }
 
-.state { text-align: center; color: #6b7280; padding: 3rem 0;
-  a { color: #4f46e5; text-decoration: none; }
+.state { text-align: center; color: var(--ink-soft); padding: 4rem 0;
+  a { color: var(--teal-dark); text-decoration: none; font-weight: 700; }
 }
-.error { color: #dc2626; }
+.error { color: var(--danger); }
+
+@media (max-width: 680px) {
+  .page { padding: 2rem 1rem 3rem; }
+  .header { align-items: flex-start; flex-direction: column; gap: 1.25rem; }
+  table { display: block; overflow-x: auto; white-space: nowrap; }
+}

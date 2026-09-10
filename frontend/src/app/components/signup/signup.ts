@@ -25,7 +25,10 @@ export class SignupComponent {
   }
 
   submit(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.loading = true;
     this.error = '';
     this.auth.signup(this.form.value).subscribe({

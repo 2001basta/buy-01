@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { sellerGuard } from './guards/seller.guard';
+import { guestGuard } from './guards/guest.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/products', pathMatch: 'full' },
@@ -9,26 +10,26 @@ export const routes: Routes = [
   {
     path: 'auth/login',
     loadComponent: () =>
-      import('./components/login/login').then(m => m.LoginComponent)
+      import('./components/login/login').then(m => m.LoginComponent),
+    canActivate: [guestGuard]
   },
   {
     path: 'auth/signup',
     loadComponent: () =>
-      import('./components/signup/signup').then(m => m.SignupComponent)
+      import('./components/signup/signup').then(m => m.SignupComponent),
+    canActivate: [guestGuard]
   },
 
   // Public product browsing
   {
     path: 'products',
     loadComponent: () =>
-      import('./components/product-list/product-list').then(m => m.ProductListComponent),
-    canActivate: [authGuard]
+      import('./components/product-list/product-list').then(m => m.ProductListComponent)
   },
   {
     path: 'products/:id',
     loadComponent: () =>
-      import('./components/product-detail/product-detail').then(m => m.ProductDetailComponent),
-    canActivate: [authGuard]
+      import('./components/product-detail/product-detail').then(m => m.ProductDetailComponent)
   },
 
   // Seller-only routes

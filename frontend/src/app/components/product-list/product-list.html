@@ -1,16 +1,32 @@
 <div class="page">
-  <div class="header">
-    <h1>Marketplace</h1>
+  <nav class="store-nav">
+    <a routerLink="/products" class="brand"><span class="brand-mark">B</span><span>buy<span class="brand-dot">.</span></span></a>
+    <div class="deliver"><span class="pin">⌖</span><span><small>Delivering to</small><strong>Everywhere</strong></span></div>
+    <div class="nav-actions">
+      <span class="hello" *ngIf="auth.isLoggedIn()">Hello, shopper</span>
+      <a *ngIf="auth.isSeller()" routerLink="/seller/dashboard" class="nav-link">Seller Hub</a>
+      <button *ngIf="auth.isLoggedIn()" (click)="auth.logout()" class="logout-button" type="button">
+        <span class="logout-icon">↪</span> Logout
+      </button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">THE EVERYDAY EDIT</p>
+      <h1>Good finds.<br /><em>Better days.</em></h1>
+      <p>Discover useful, beautiful things from independent sellers.</p>
+      <a href="#products" class="hero-link">Explore the collection <span>→</span></a>
+    </div>
+    <div class="hero-art" aria-hidden="true"><span class="sun"></span><span class="shape shape-one"></span><span class="shape shape-two"></span><span class="shape shape-three"></span></div>
+  </section>
+
+  <div class="header" id="products">
+    <div><p class="eyebrow">CURATED FOR YOU</p><h2>Today’s finds</h2></div>
     <div class="actions">
       <a *ngIf="auth.isSeller()" routerLink="/seller/products/create" class="btn-primary">
-        + New Product
+        + List a product
       </a>
-      <a *ngIf="auth.isSeller()" routerLink="/seller/dashboard" class="btn-secondary">
-        My Products
-      </a>
-      <button *ngIf="auth.isLoggedIn()" (click)="auth.logout()" class="btn-logout">
-        Logout
-      </button>
     </div>
   </div>
 
@@ -19,6 +35,7 @@
 
   <div class="grid" *ngIf="!loading() && !error()">
     <a *ngFor="let p of products()" [routerLink]="['/products', p.id]" class="card">
+      <span class="card-badge">FEATURED</span>
       <div class="card-image">
         <img *ngIf="p.imageIds.length" [src]="mediaService.getUrl(p.imageIds[0])" [alt]="p.name" />
         <div *ngIf="!p.imageIds.length" class="placeholder">No image</div>
@@ -26,7 +43,7 @@
       <div class="card-body">
         <h3>{{ p.name }}</h3>
         <p class="desc">{{ p.description }}</p>
-        <p class="price">${{ p.price | number:'1.2-2' }}</p>
+        <div class="card-footer"><p class="price">${{ p.price | number:'1.2-2' }}</p><span class="view-arrow">→</span></div>
       </div>
     </a>
     <p *ngIf="products().length === 0" class="state">No products yet.</p>

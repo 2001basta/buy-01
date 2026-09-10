@@ -37,7 +37,11 @@ export class ProductDetailComponent implements OnInit {
     if (!this.product() || !confirm('Delete this product?')) return;
     this.productService.delete(this.product()!.id).subscribe({
       next: () => this.router.navigate(['/products']),
-      error: () => alert('Failed to delete product')
+      error: err => this.error.set(err.error?.message ?? 'You are not allowed to delete this product')
     });
+  }
+
+  canManageProduct(): boolean {
+    return this.auth.isSeller() && this.product()?.sellerId === this.auth.getUserId();
   }
 }

@@ -1,19 +1,33 @@
 <div class="auth-container">
+  <div class="auth-visual">
+    <a routerLink="/products" class="auth-brand"><span class="brand-mark">B</span> buy<span>.</span></a>
+    <div class="visual-copy">
+      <p class="eyebrow">A BETTER WAY TO SHOP</p>
+      <h1>Find something<br /><em>worth keeping.</em></h1>
+      <p>Thoughtful products, independent sellers, and a marketplace made for everyday discoveries.</p>
+    </div>
+    <div class="visual-shapes" aria-hidden="true"><span></span><i></i><b></b></div>
+  </div>
   <div class="auth-card">
+    <p class="form-kicker">WELCOME BACK</p>
     <h2>Login</h2>
+    <p class="form-intro">Sign in to continue exploring your next favorite thing.</p>
     <form [formGroup]="form" (ngSubmit)="submit()">
       <div class="field">
         <label>Email</label>
         <input type="email" formControlName="email" placeholder="you@example.com" />
+        <small class="field-error" *ngIf="form.controls['email'].touched && form.controls['email'].hasError('required')">Email is required.</small>
+        <small class="field-error" *ngIf="form.controls['email'].touched && form.controls['email'].hasError('email')">Enter a valid email address.</small>
       </div>
       <div class="field">
         <label>Password</label>
         <input type="password" formControlName="password" placeholder="••••••••" />
+        <small class="field-error" *ngIf="form.controls['password'].touched && form.controls['password'].hasError('required')">Password is required.</small>
       </div>
       <button type="submit" [disabled]="loading()">
         {{ loading() ? 'Logging in...' : 'Login' }}
       </button>
-      <p class="error" *ngIf="error">{{ error() }}</p>
+      <p class="error" *ngIf="error()">{{ error() }}</p>
     </form>
     <p class="link">Don't have an account? <a routerLink="/auth/signup">Sign up</a></p>
   </div>
