@@ -16,6 +16,7 @@ export class SellerDashboardComponent implements OnInit {
   products: WritableSignal<Product[]> = signal([]);
   loading = signal(true);
   error = signal('');
+  deleteTarget: WritableSignal<Product | null> = signal(null);
 
   constructor(
     private productService: ProductService,
@@ -35,9 +36,20 @@ export class SellerDashboardComponent implements OnInit {
   }
 
   delete(id: string): void {
-    if (!confirm('Delete this product?')) return;
-    this.productService.delete(id).subscribe({
-      next: () => this.products.update(list => list.filter(p => p.id !== id)),
+    const product = this.products().find(item => item.id === id);
+    if (product) this.deleteTarget.set(product);
+  }
+
+  cancelDelete(): void {
+    this.deleteTarget.set(null);
+  }
+
+  confirmDelete(): void {
+    const product = this.deleteTarget();
+    if (!product) return;
+    this.deleteTarget.set(null);
+    this.productService.delete(product.id).subscribe({
+      next: () => this.products.update(list => list.filter(p => p.id !== product.id)),
       error: err => this.error.set(err.error?.message ?? 'You are not allowed to delete this product')
     });
   }

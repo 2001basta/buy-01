@@ -53,6 +53,17 @@ table {
 }
 .error { color: var(--danger); }
 
+.modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 1rem; background: rgba(13, 41, 56, .48); }
+.delete-modal { width: min(100%, 430px); padding: 2rem; border-top: 5px solid var(--danger); border-radius: 5px; background: var(--surface); box-shadow: 0 24px 60px rgba(13, 41, 56, .24); }
+.modal-kicker { margin: 0 0 .75rem; color: var(--danger); font-size: .7rem; font-weight: 700; letter-spacing: .14em; }
+.delete-modal h2 { margin: 0 0 .75rem; color: var(--navy-deep); font-size: 1.5rem; }
+.delete-modal p:not(.modal-kicker) { margin: 0; color: var(--ink-soft); line-height: 1.6; }
+.modal-actions { display: flex; justify-content: flex-end; gap: .65rem; margin-top: 1.75rem; }
+.modal-cancel, .modal-confirm { padding: .7rem 1rem; border: 0; border-radius: 3px; cursor: pointer; font-size: .82rem; font-weight: 700; }
+.modal-cancel { background: #e6ece9; color: var(--navy); }
+.modal-confirm { background: var(--danger); color: #fff; }
+.modal-confirm:hover { background: #993f38; }
+
 @media (max-width: 680px) {
   .page { padding: 2rem 1rem 3rem; }
   .header { align-items: flex-start; flex-direction: column; gap: 1.25rem; }
