@@ -16,6 +16,7 @@ export class ProductDetailComponent implements OnInit {
   product: WritableSignal<Product | null> = signal(null);
   loading = signal(true);
   error = signal('');
+  deleteDialogOpen = signal(false);
 
   constructor(
     private route: ActivatedRoute,
@@ -34,10 +35,24 @@ export class ProductDetailComponent implements OnInit {
   }
 
   delete(): void {
-    if (!this.product() || !confirm('Delete this product?')) return;
+    if (!this.product()) return;
+    this.deleteDialogOpen.set(true);
+  }
+
+  cancelDelete(): void {
+    this.deleteDialogOpen.set(false);
+  }
+
+  confirmDelete(): void {
+    if (!this.product()) return;
+    this.deleteDialogOpen.set(false);
     this.productService.delete(this.product()!.id).subscribe({
       next: () => this.router.navigate(['/products']),
-      error: () => alert('Failed to delete product')
+      error: err => this.error.set(err.error?.message ?? 'You are not allowed to delete this product')
     });
+  }
+
+  canManageProduct(): boolean {
+    return this.auth.isSeller() && this.product()?.sellerId === this.auth.getUserId();
   }
 }

@@ -1,18 +1,33 @@
 <div class="auth-container">
+  <div class="auth-visual signup-visual">
+    <a routerLink="/products" class="auth-brand"><span class="brand-mark">B</span> buy<span>.</span></a>
+    <div class="visual-copy">
+      <p class="eyebrow">JOIN THE MARKETPLACE</p>
+      <h1>Make room for<br /><em>good things.</em></h1>
+      <p>Create an account to shop unique finds or share products with people who are looking.</p>
+    </div>
+    <div class="visual-shapes" aria-hidden="true"><span></span><i></i><b></b></div>
+  </div>
   <div class="auth-card">
+    <p class="form-kicker">START HERE</p>
     <h2>Create Account</h2>
+    <p class="form-intro">A few details and you’re ready to discover more.</p>
     <form [formGroup]="form" (ngSubmit)="submit()">
       <div class="field">
         <label>Name</label>
         <input type="text" formControlName="name" placeholder="Your name" />
+        <small class="field-error" *ngIf="form.controls['name'].touched && form.controls['name'].hasError('required')">Name is required.</small>
       </div>
       <div class="field">
         <label>Email</label>
         <input type="email" formControlName="email" placeholder="you@example.com" />
+        <small class="field-error" *ngIf="form.controls['email'].touched && form.controls['email'].hasError('required')">Email is required.</small>
+        <small class="field-error" *ngIf="form.controls['email'].touched && form.controls['email'].hasError('email')">Enter a valid email address.</small>
       </div>
       <div class="field">
         <label>Password</label>
         <input type="password" formControlName="password" placeholder="Min. 8 characters" />
+        <small class="field-error" *ngIf="form.controls['password'].touched && form.controls['password'].hasError('minlength')">Password must be at least 8 characters.</small>
       </div>
       <div class="field">
         <label>Account type</label>

@@ -33,27 +33,18 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    const token = this.getToken();
-    if (!token) return false;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.exp * 1000 > Date.now();
-    } catch {
-      return false;
-    }
+    const payload = this.getPayload();
+    return !!payload && typeof payload['exp'] === 'number' && payload['exp'] * 1000 > Date.now();
   }
 
   getRole(): string | null {
-    const token = this.getToken();
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      // roles claim is a list e.g. ["SELLER"]
-      const roles: string[] = payload.roles ?? [];
-      return roles[0] ?? null;
-    } catch {
-      return null;
-    }
+    const roles = this.getPayload()?.['roles'];
+    return Array.isArray(roles) ? roles[0] ?? null : typeof roles === 'string' ? roles : null;
+  }
+
+  getUserId(): string | null {
+    const subject = this.getPayload()?.['sub'];
+    return typeof subject === 'string' ? subject : null;
   }
 
   isSeller(): boolean {
@@ -62,5 +53,17 @@ export class AuthService {
 
   private storeToken(token: string): void {
     localStorage.setItem(this.TOKEN_KEY, token);
+  }
+
+  private getPayload(): Record<string, any> | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const encoded = token.split('.')[1];
+      const normalized = encoded.replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=')));
+    } catch {
+      return null;
+    }
   }
 }

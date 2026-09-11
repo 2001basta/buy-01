@@ -1,8 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+:root {
+  --ink: #16232d;
+  --ink-soft: #52616b;
+  --navy: #123b52;
+  --navy-deep: #0d2938;
+  --teal: #168c86;
+  --teal-dark: #0f706c;
+  --citrus: #e6b84c;
+  --paper: #f7f5ef;
+  --surface: #ffffff;
+  --line: #dfe4df;
+  --muted: #829096;
+  --danger: #bd4d42;
+  --shadow: 0 16px 38px rgba(25, 48, 57, .09);
+}
+
 *, *::before, *::after { box-sizing: border-box; }
+
+html { background: var(--paper); }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #f9fafb;
-  color: #111827;
+  min-width: 320px;
+  font-family: 'DM Sans', sans-serif;
+  background: radial-gradient(circle at 90% 0%, rgba(230,184,76,.16), transparent 27rem), var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
 }
+
+button, input, textarea, select { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+
+h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -.035em; }
+
+::selection { color: #fff; background: var(--teal); }

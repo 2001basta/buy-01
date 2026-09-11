@@ -41,10 +41,20 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
                         .parseSignedClaims(token)
                         .getPayload();
 
+                Object roles = claims.get("roles");
+                if (claims.getSubject() == null || roles == null) {
+                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                    return exchange.getResponse().setComplete();
+                }
+
                 ServerHttpRequest mutatedRequest = exchange.getRequest()
                         .mutate()
+                        .headers(headers -> {
+                            headers.remove("userId");
+                            headers.remove("roles");
+                        })
                         .header("userId", claims.getSubject())
-                        .header("roles", claims.get("roles").toString())
+                        .header("roles", roles.toString())
                         .build();
 
                 return chain.filter(exchange.mutate().request(mutatedRequest).build());

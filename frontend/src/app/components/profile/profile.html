@@ -1,0 +1,47 @@
+<div class="page">
+  <div class="header">
+    <div>
+      <p class="eyebrow">ACCOUNT</p>
+      <h1>Your profile</h1>
+      <p class="header-note">Keep your marketplace identity up to date.</p>
+    </div>
+    <a routerLink="/products" class="back">Marketplace</a>
+  </div>
+
+  <p *ngIf="loading()" class="state">Loading...</p>
+  <p *ngIf="error()" class="state error">{{ error() }}</p>
+
+  <form *ngIf="profile()" [formGroup]="form" (ngSubmit)="save()" class="profile-card">
+    <div class="avatar-block">
+      <div class="avatar-frame">
+        <img *ngIf="profile()?.avatar" [src]="mediaService.getUrl(profile()!.avatar!)" alt="Your avatar" />
+        <span *ngIf="!profile()?.avatar" aria-hidden="true">{{ profile()!.name.charAt(0) }}</span>
+      </div>
+      <div>
+        <label class="upload-button">
+          Change avatar
+          <input type="file" accept="image/jpeg,image/png" (change)="onAvatarChange($event)" />
+        </label>
+        <p class="hint">JPEG or PNG, maximum 2 MB.</p>
+        <p *ngIf="avatarError()" class="field-error">{{ avatarError() }}</p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="name">Name</label>
+      <input id="name" type="text" formControlName="name" />
+      <small *ngIf="form.controls.name.touched && form.controls.name.invalid" class="field-error">Enter a name up to 120 characters.</small>
+    </div>
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" type="email" formControlName="email" />
+      <small *ngIf="form.controls.email.touched && form.controls.email.invalid" class="field-error">Enter a valid email address.</small>
+    </div>
+
+    <p class="role-label">Role: <strong>{{ profile()!.roles.join(', ') }}</strong></p>
+    <div class="form-actions">
+      <button type="submit" [disabled]="saving()">{{ saving() ? 'Saving...' : 'Save profile' }}</button>
+      <a routerLink="/products" class="btn-cancel">Cancel</a>
+    </div>
+  </form>
+</div>

@@ -9,6 +9,8 @@ spring:
     multipart:
       max-file-size: 2MB
       max-request-size: 2MB
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
 
 upload:
   dir: ${UPLOAD_DIR:./uploads}

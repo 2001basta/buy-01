@@ -32,4 +32,8 @@ export class ProductService {
   attachImages(id: string, imageIds: string[]): Observable<Product> {
     return this.http.put<Product>(`${this.base}/${id}/images`, { imageIds });
   }
+
+  removeImage(id: string, imageId: string): Observable<Product> {
+    return this.http.delete<Product>(`${this.base}/${id}/images/${imageId}`);
+  }
 }

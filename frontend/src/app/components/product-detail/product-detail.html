@@ -1,5 +1,8 @@
 <div class="page">
-  <a routerLink="/products" class="back">← Back to products</a>
+  <div class="detail-topbar">
+    <div class="crumbs"><a routerLink="/products">Marketplace</a><span>/</span><span>Product details</span></div>
+    <button *ngIf="auth.isLoggedIn()" type="button" class="btn-logout" (click)="auth.logout()">↪ Logout</button>
+  </div>
 
   <p *ngIf="loading()" class="state">Loading...</p>
   <p *ngIf="error()" class="state error">{{ error() }}</p>
@@ -12,14 +15,28 @@
     </div>
 
     <div class="info">
+      <p class="product-label">INDEPENDENT SELLER</p>
       <h1>{{ product()!.name }}</h1>
       <p class="price">${{ product()!.price | number:'1.2-2' }}</p>
       <p class="desc">{{ product()!.description }}</p>
+      <div class="trust-list"><span>✓ Secure marketplace</span><span>✓ Seller verified</span><span>✓ Quality checked</span></div>
 
-      <div class="owner-actions" *ngIf="auth.isSeller()">
+      <div class="owner-actions" *ngIf="canManageProduct()">
         <a [routerLink]="['/seller/products/edit', product()!.id]" class="btn-secondary">Edit</a>
         <button (click)="delete()" class="btn-danger">Delete</button>
       </div>
     </div>
+  </div>
+
+  <div *ngIf="deleteDialogOpen()" class="modal-backdrop" (click)="cancelDelete()">
+    <section class="delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-title" (click)="$event.stopPropagation()">
+      <p class="modal-kicker">PRODUCT ACTION</p>
+      <h2 id="delete-title">Delete this product?</h2>
+      <p>This will permanently remove <strong>{{ product()?.name }}</strong> from your storefront.</p>
+      <div class="modal-actions">
+        <button type="button" class="modal-cancel" (click)="cancelDelete()">Cancel</button>
+        <button type="button" class="modal-confirm" (click)="confirmDelete()">Delete product</button>
+      </div>
+    </section>
   </div>
 </div>

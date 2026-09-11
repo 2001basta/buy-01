@@ -23,7 +23,10 @@ export class LoginComponent {
   }
 
   submit(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.loading.set(true);
     this.error.set('');
     this.auth.login(this.form.value).subscribe({

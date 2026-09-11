@@ -1,0 +1,6 @@
+.env
+
+# Build and generated output
+.gradle/
+build/
+bin/

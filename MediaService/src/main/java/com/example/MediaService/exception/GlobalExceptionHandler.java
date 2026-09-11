@@ -43,6 +43,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneric(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "INTERNAL_ERROR", "message", ex.getMessage()));
+                .body(Map.of("error", "INTERNAL_ERROR", "message", "An unexpected error occurred"));
     }
 }
