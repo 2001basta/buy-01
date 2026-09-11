@@ -17,7 +17,7 @@ public class MediaServiceClient {
     private final String mediaServiceUrl;
 
     public MediaServiceClient(RestTemplate restTemplate,
-                              @Value("lb://MediaService") String mediaServiceUrl) {
+                              @Value("${media.service.url:lb://MediaService}") String mediaServiceUrl) {
         this.restTemplate = restTemplate;
         this.mediaServiceUrl = mediaServiceUrl;
     }

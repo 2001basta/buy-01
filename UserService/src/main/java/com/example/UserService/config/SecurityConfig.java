@@ -29,10 +29,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/users/login", "/users/signup", "/oauth2/**").permitAll()
-            .anyRequest().authenticated()
-        )
+        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
         .oauth2Login(oauth2 -> oauth2
             .defaultSuccessUrl("/users/oauth2/success")
         );

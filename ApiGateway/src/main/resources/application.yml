@@ -5,6 +5,14 @@ spring:
     import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
   cloud:
     gateway:
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowed-origins: ${FRONTEND_ORIGIN:http://localhost:4200}
+            allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+            allowed-headers: '*'
+            allow-credentials: true
       # Routes below are local fallback.
       # When Config Server is available, ApiGateway.yml in ConfigService overrides them
       # and uses lb:// URIs resolved via Eureka.
@@ -40,7 +48,7 @@ spring:
         - id: media-public-serve
           uri: ${MEDIA_SERVICE_URL:http://localhost:8083}
           predicates:
-            - Path=/api/media/**
+            - Path=/api/media/{id}
             - Method=GET
 
         # Protected: media upload / delete
@@ -55,7 +63,7 @@ server:
   port: 8080
 
 jwt:
-  secret: ${JWT_SECRET:mySuperSecretKeyForTheMarketplace01}
+  secret: ${JWT_SECRET}
 
 # Eureka (fallback if Config Server unavailable)
 eureka:
@@ -72,7 +80,7 @@ management:
         include: health,info,metrics
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
   tracing:
     sampling:
       probability: 1.0

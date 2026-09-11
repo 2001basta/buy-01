@@ -19,6 +19,12 @@ export const routes: Routes = [
       import('./components/signup/signup').then(m => m.SignupComponent),
     canActivate: [guestGuard]
   },
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./components/profile/profile').then(m => m.ProfileComponent),
+    canActivate: [authGuard]
+  },
 
   // Public product browsing
   {

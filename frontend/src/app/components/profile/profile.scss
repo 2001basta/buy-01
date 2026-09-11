@@ -1,0 +1,25 @@
+.page { max-width: 760px; margin: 0 auto; padding: 3.5rem 1.5rem 5rem; }
+.header { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; }
+.header h1 { margin: 0; font-size: clamp(2rem, 4vw, 3rem); }
+.eyebrow { margin: 0 0 .5rem; color: var(--teal-dark); font-size: .7rem; font-weight: 700; letter-spacing: .16em; }
+.header-note { margin: .5rem 0 0; color: var(--ink-soft); }
+.back { color: var(--teal-dark); font-weight: 700; text-decoration: none; }
+.profile-card { display: grid; gap: 1.25rem; padding: clamp(1.25rem, 4vw, 2.25rem); border: 1px solid var(--line); border-radius: 5px; background: var(--surface); box-shadow: var(--shadow); }
+.avatar-block { display: flex; align-items: center; gap: 1rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--line); }
+.avatar-frame { display: grid; place-items: center; width: 84px; height: 84px; overflow: hidden; border-radius: 50%; background: var(--navy); color: var(--citrus); font: 700 2rem 'Space Grotesk', sans-serif; }
+.avatar-frame img { width: 100%; height: 100%; object-fit: cover; }
+.upload-button { display: inline-block; padding: .65rem .9rem; border-radius: 3px; background: #e6ece9; color: var(--navy); cursor: pointer; font-size: .82rem; font-weight: 700; }
+.upload-button input { display: none; }
+.hint, .role-label { margin: .4rem 0 0; color: var(--ink-soft); font-size: .78rem; }
+.field { display: grid; gap: .4rem; }
+.field label { color: var(--navy); font-size: .82rem; font-weight: 700; }
+.field input { width: 100%; padding: .8rem .9rem; border: 1px solid var(--line); border-radius: 3px; background: #fbfcfa; color: var(--ink); }
+.field input:focus { outline: 2px solid rgba(22, 140, 134, .25); border-color: var(--teal); }
+.field-error, .error { color: var(--danger); }
+.field-error { margin: 0; font-size: .76rem; }
+.form-actions { display: flex; align-items: center; gap: .75rem; margin-top: .5rem; }
+.form-actions button { padding: .75rem 1rem; border: 0; border-radius: 3px; background: var(--navy); color: #fff; cursor: pointer; font-weight: 700; }
+.form-actions button:disabled { cursor: wait; opacity: .6; }
+.btn-cancel { color: var(--ink-soft); font-size: .85rem; text-decoration: none; }
+.state { padding: 4rem 0; text-align: center; color: var(--ink-soft); }
+@media (max-width: 640px) { .page { padding: 2rem 1rem 3rem; } .header { align-items: flex-start; flex-direction: column; } }

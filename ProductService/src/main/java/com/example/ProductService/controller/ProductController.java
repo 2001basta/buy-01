@@ -44,7 +44,7 @@ public class ProductController {
             @PathVariable String id,
             @RequestHeader("userId") String userId,
             @RequestHeader("roles") String roles,
-            @RequestBody UpdateProductRequest req) {
+            @Valid @RequestBody UpdateProductRequest req) {
         return productService.update(id, userId, roles, req);
     }
 
@@ -64,5 +64,14 @@ public class ProductController {
             @RequestHeader("roles") String roles,
             @Valid @RequestBody AttachImagesRequest req) {
         return productService.attachImages(id, userId, roles, req);
+    }
+
+    @DeleteMapping("/{id}/images/{imageId}")
+    public ProductResponse removeImage(
+            @PathVariable String id,
+            @PathVariable String imageId,
+            @RequestHeader("userId") String userId,
+            @RequestHeader("roles") String roles) {
+        return productService.removeImage(id, imageId, userId, roles);
     }
 }

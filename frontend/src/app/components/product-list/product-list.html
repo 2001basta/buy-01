@@ -4,6 +4,7 @@
     <div class="deliver"><span class="pin">⌖</span><span><small>Delivering to</small><strong>Everywhere</strong></span></div>
     <div class="nav-actions">
       <span class="hello" *ngIf="auth.isLoggedIn()">Hello, shopper</span>
+      <a *ngIf="auth.isLoggedIn()" routerLink="/profile" class="nav-link">Profile</a>
       <a *ngIf="auth.isSeller()" routerLink="/seller/dashboard" class="nav-link">Seller Hub</a>
       <button *ngIf="auth.isLoggedIn()" (click)="auth.logout()" class="logout-button" type="button">
         <span class="logout-icon">↪</span> Logout

@@ -79,15 +79,14 @@ export class CreateProductComponent implements OnInit {
 
   removeExistingImage(imageId: string): void {
     if (!this.product()) return;
-    this.mediaService.delete(imageId).subscribe({
-      next: () => {
-        const remaining = this.existingImageIds().filter(id => id !== imageId);
-        this.productService.attachImages(this.product()!.id, remaining).subscribe({
-          next: () => this.existingImageIds.set(remaining),
-          error: () => this.error.set('Image removed from storage but product update failed')
+    this.productService.removeImage(this.product()!.id, imageId).subscribe({
+      next: product => {
+        this.existingImageIds.set(product.imageIds);
+        this.mediaService.delete(imageId).subscribe({
+          error: err => this.error.set(err.error?.message ?? 'Image reference removed, but file cleanup failed')
         });
       },
-      error: err => this.error.set(err.error?.message ?? 'Unable to remove image')
+      error: err => this.error.set(err.error?.message ?? 'Unable to remove image from product')
     });
   }
 
@@ -135,11 +134,13 @@ export class CreateProductComponent implements OnInit {
         this.uploading.set(false);
         return;
       }
-      this.productService.attachImages(productId, imageIds).subscribe({
+      const allImageIds = [...this.existingImageIds(), ...imageIds];
+      this.productService.attachImages(productId, allImageIds).subscribe({
         next: () => this.router.navigate(['/seller/dashboard']),
-        error: () => {
+        error: err => {
           this.cleanupMedia(imageIds);
-          this.error.set('Product saved but image attach failed. You can retry from Edit Product.');
+          const message = err.error?.message ?? 'Image attachment failed';
+          this.error.set(`Product saved, but images could not be attached: ${message}`);
           this.saving.set(false);
           this.uploading.set(false);
         }

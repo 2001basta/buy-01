@@ -1,6 +1,8 @@
 package com.example.UserService.service;
 
 import com.example.UserService.entity.User;
+import com.example.UserService.dto.ProfileUpdateRequest;
+import com.example.UserService.dto.UserResponse;
 import com.example.UserService.outils.Role;
 import com.example.UserService.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -46,5 +48,25 @@ public class AuthService {
             throw new RuntimeException("Invalid credentials");
 
         return jwtService.generateToken(user.getId(), user.getRoles());
+    }
+
+    public UserResponse getProfile(String userId) {
+        return UserResponse.from(findById(userId));
+    }
+
+    public UserResponse updateProfile(String userId, ProfileUpdateRequest request) {
+        User user = findById(userId);
+        userRepository.findByEmail(request.email())
+                .filter(existing -> !existing.getId().equals(userId))
+                .ifPresent(existing -> { throw new RuntimeException("Email already exists"); });
+        user.setName(request.name().trim());
+        user.setEmail(request.email().trim().toLowerCase());
+        if (request.avatar() != null) user.setAvatar(request.avatar());
+        return UserResponse.from(userRepository.save(user));
+    }
+
+    private User findById(String userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

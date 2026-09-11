@@ -6,7 +6,7 @@ services:
   mongodb:
     image: mongo:7
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo-data:/data/db
     healthcheck:
@@ -118,12 +118,10 @@ services:
   # =========================
   user-service:
     build: ./UserService
-    ports:
-      - "8081:8081"
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/userdb
 
-      JWT_SECRET: ${JWT_SECRET:-mySuperSecretKeyForTheMarketplace01}
+      JWT_SECRET: ${JWT_SECRET}
 
       CONFIG_SERVER_URL: http://config-server:8888
 
@@ -149,12 +147,10 @@ services:
   # =========================
   media-service:
     build: ./MediaService
-    ports:
-      - "8083:8083"
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/mediadb
 
-      JWT_SECRET: ${JWT_SECRET:-mySuperSecretKeyForTheMarketplace01}
+      JWT_SECRET: ${JWT_SECRET}
 
       UPLOAD_DIR: /uploads
 
@@ -185,12 +181,10 @@ services:
   # =========================
   product-service:
     build: ./ProductService
-    ports:
-      - "8082:8082"
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/productdb
 
-      JWT_SECRET: ${JWT_SECRET:-mySuperSecretKeyForTheMarketplace01}
+      JWT_SECRET: ${JWT_SECRET}
 
       MEDIA_SERVICE_URL: http://media-service:8083
 
@@ -226,7 +220,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      JWT_SECRET: ${JWT_SECRET:-mySuperSecretKeyForTheMarketplace01}
+      JWT_SECRET: ${JWT_SECRET}
 
       USER_SERVICE_URL: http://user-service:8081
 

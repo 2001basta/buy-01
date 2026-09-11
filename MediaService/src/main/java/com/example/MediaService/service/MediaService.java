@@ -34,7 +34,7 @@ public class MediaService {
 
     private final MediaRepository mediaRepository;
 
-    @Value("${media.storage.path}")
+    @Value("${upload.dir}")
     private String uploadDir;
 
     public MediaResponse upload(MultipartFile file, String ownerId, String productId) throws IOException {
@@ -122,10 +122,17 @@ public class MediaService {
     }
 
     private Path resolveDirectory(String ownerId, String productId) {
+        Path root = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Path directory;
         if (productId != null && !productId.isBlank()) {
-            return Paths.get(uploadDir, "products", productId);
+            directory = root.resolve("products").resolve(productId).normalize();
+        } else {
+            directory = root.resolve("users").resolve(ownerId).normalize();
         }
-        return Paths.get(uploadDir, "users", ownerId);
+        if (!directory.startsWith(root)) {
+            throw new NotFoundException("Invalid storage path");
+        }
+        return directory;
     }
 
     private String extensionFor(String mimeType) {

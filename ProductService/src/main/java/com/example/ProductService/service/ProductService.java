@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -99,7 +101,7 @@ public class ProductService {
             throw new NotFoundException("One or more imageIds do not exist or are not owned by you");
         }
 
-        product.getImageIds().addAll(req.imageIds());
+        product.setImageIds(new ArrayList<>(req.imageIds()));
         ProductResponse response = ProductResponse.from(productRepository.save(product));
 
         eventProducer.send(new ProductEvent(
@@ -111,8 +113,32 @@ public class ProductService {
         return response;
     }
 
+    public ProductResponse removeImage(String id, String imageId, String currentUserId, String roles) {
+        requireSeller(roles);
+        Product product = findOrThrow(id);
+        requireOwner(product.getSellerId(), currentUserId);
+
+        if (!product.getImageIds().remove(imageId)) {
+            throw new NotFoundException("Image is not attached to this product");
+        }
+
+        ProductResponse response = ProductResponse.from(productRepository.save(product));
+        eventProducer.send(new ProductEvent(
+                "UPDATED", response.id(), currentUserId,
+                response.name(), response.price(),
+                response.imageIds(), LocalDateTime.now()
+        ));
+        return response;
+    }
+
     private void requireSeller(String roles) {
-        if (roles == null || !roles.contains("SELLER")) {
+        boolean seller = roles != null && Arrays.stream(roles
+                        .replace("[", "")
+                        .replace("]", "")
+                        .split(","))
+                .map(String::trim)
+                .anyMatch("SELLER"::equals);
+        if (!seller) {
             throw new ForbiddenException("Only sellers can perform this action");
         }
     }
