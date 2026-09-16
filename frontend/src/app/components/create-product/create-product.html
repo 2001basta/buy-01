@@ -1,11 +1,17 @@
 <div class="page">
-  <div class="header">
-    <div><p class="eyebrow">SELLER STUDIO</p><h1>{{ isEdit() ? 'Edit Product' : 'New Product' }}</h1><p class="header-note">Give your next great find a place to shine.</p></div>
-    <div class="header-actions">
-      <a routerLink="/seller/dashboard" class="back">← Dashboard</a>
-      <button type="button" class="btn-logout" (click)="auth.logout()">↪ Logout</button>
-    </div>
+  <div *ngIf="!auth.isLoggedIn()" class="auth-required">
+    <p>You need to log in before creating a product.</p>
+    <a [routerLink]="['/auth/login']" [queryParams]="{ returnUrl: '/seller/products/create' }">Login to continue</a>
   </div>
+
+  <ng-container *ngIf="auth.isLoggedIn()">
+    <div class="header">
+      <div><p class="eyebrow">SELLER STUDIO</p><h1>{{ isEdit() ? 'Edit Product' : 'New Product' }}</h1><p class="header-note">Give your next great find a place to shine.</p></div>
+      <div class="header-actions">
+        <a routerLink="/seller/dashboard" class="back">← Dashboard</a>
+        <button type="button" class="btn-logout" (click)="auth.logout()">↪ Logout</button>
+      </div>
+    </div>
 
   <form [formGroup]="form" (ngSubmit)="submit()" class="form-card">
     <div class="form-section-title"><span>01</span><div><h2>Product basics</h2><p>Tell shoppers what makes this item special.</p></div></div>
@@ -53,4 +59,5 @@
       <a routerLink="/seller/dashboard" class="btn-cancel">Cancel</a>
     </div>
   </form>
+  </ng-container>
 </div>

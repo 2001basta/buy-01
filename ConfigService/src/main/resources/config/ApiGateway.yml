@@ -31,11 +31,24 @@ spring:
           filters:
             - JwtAuthFilter
             - RewritePath=/api/users/(?<segment>.*), /users/${segment}
+        
+        - id: product-public-list
+          uri: lb://ProductService
+          predicates:
+            - Path=/api/products
+            - Method=GET
 
-        - id: product-service
+        - id: product-public-detail
+          uri: lb://ProductService
+          predicates:
+            - Path=/api/products/{id}
+            - Method=GET
+
+        - id: product-protected
           uri: lb://ProductService
           predicates:
             - Path=/api/products/**
+            - Method=POST,PUT,DELETE
           filters:
             - JwtAuthFilter
 

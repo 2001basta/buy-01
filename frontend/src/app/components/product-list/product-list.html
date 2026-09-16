@@ -9,6 +9,8 @@
       <button *ngIf="auth.isLoggedIn()" (click)="auth.logout()" class="logout-button" type="button">
         <span class="logout-icon">↪</span> Logout
       </button>
+      <a *ngIf="!auth.isLoggedIn()" routerLink="/auth/login" class="nav-link">Login</a>
+      <a *ngIf="!auth.isLoggedIn()" routerLink="/auth/signup" class="nav-link">Register</a>
     </div>
   </nav>
 

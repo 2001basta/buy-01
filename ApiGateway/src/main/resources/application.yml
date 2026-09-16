@@ -36,11 +36,25 @@ spring:
             - JwtAuthFilter
             - RewritePath=/api/users/(?<segment>.*), /users/${segment}
 
+        # Public: product reads
+        - id: product-public-list
+          uri: ${PRODUCT_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/products
+            - Method=GET
+
+        - id: product-public-detail
+          uri: ${PRODUCT_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/products/{id}
+            - Method=GET
+
         # Protected: product CRUD
-        - id: product-service
+        - id: product-protected
           uri: ${PRODUCT_SERVICE_URL:http://localhost:8082}
           predicates:
             - Path=/api/products/**
+            - Method=POST,PUT,DELETE
           filters:
             - JwtAuthFilter
 
