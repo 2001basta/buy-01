@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -45,6 +46,13 @@ public class MediaService {
         String mimeType = TIKA.detect(file.getInputStream());
         if (!ALLOWED_MIME.contains(mimeType)) {
             throw new InvalidFileTypeException(mimeType);
+        }
+
+        if (productId != null && !productId.isBlank()) {
+            long currentImageCount = mediaRepository.countByProductId(productId);
+            if (currentImageCount >= 5) {
+                throw new IllegalArgumentException("You cannot upload more than 5 images for a product");
+            }
         }
 
         // Pre-generate ID so we can build the URL before saving (avoids double save)
@@ -107,13 +115,31 @@ public class MediaService {
     // against here, and a missing/already-gone media id is not an error.
     public void deleteAll(List<String> ids) {
         List<Media> found = mediaRepository.findAllById(ids);
-        for (Media media : found) {
+        deleteMediaFilesAndRecords(found);
+    }
+
+    public void deleteAllForProduct(String productId) {
+        deleteMediaFilesAndRecords(mediaRepository.findByProductId(productId));
+    }
+
+    // Product updates carry the complete current image list. Remove media that is no longer attached.
+    public void removeImagesDetachedFromProduct(String productId, List<String> currentImageIds) {
+        Set<String> attachedIds = new HashSet<>(currentImageIds);
+        List<Media> detached = mediaRepository.findByProductId(productId).stream()
+                .filter(media -> !attachedIds.contains(media.getId()))
+                .toList();
+
+        deleteMediaFilesAndRecords(detached);
+    }
+
+    private void deleteMediaFilesAndRecords(List<Media> mediaItems) {
+        for (Media media : mediaItems) {
             try {
                 Files.deleteIfExists(Paths.get(media.getStoragePath()));
             } catch (IOException ignored) {
             }
         }
-        mediaRepository.deleteAll(found);
+        mediaRepository.deleteAll(mediaItems);
     }
 
     private Media findOrThrow(String id) {

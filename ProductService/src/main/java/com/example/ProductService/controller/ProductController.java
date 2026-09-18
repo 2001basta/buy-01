@@ -63,6 +63,7 @@ public class ProductController {
             @RequestHeader("userId") String userId,
             @RequestHeader("roles") String roles,
             @Valid @RequestBody AttachImagesRequest req) {
+
         return productService.attachImages(id, userId, roles, req);
     }
 
@@ -72,6 +73,7 @@ public class ProductController {
             @PathVariable String imageId,
             @RequestHeader("userId") String userId,
             @RequestHeader("roles") String roles) {
+                System.out.println("if you are working tell me yes");
         return productService.removeImage(id, imageId, userId, roles);
     }
 }

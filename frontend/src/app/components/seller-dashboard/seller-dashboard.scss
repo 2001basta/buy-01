@@ -37,8 +37,8 @@ table {
   tbody tr { transition: background .2s ease; &:hover { background: #fbfcfa; } }
 }
 
-.thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 3px; }
-.no-img { color: var(--muted); }
+.thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); background: #edf2f1; box-shadow: 0 8px 18px rgba(13,41,56,.08); }
+.no-img { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 10px; border: 1px dashed var(--muted); color: var(--muted); background: #f3f6f5; }
 
 .row-actions { display: flex; gap: .5rem; }
 .btn-edit, .btn-delete {

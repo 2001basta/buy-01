@@ -74,7 +74,7 @@ The Gateway validates JWTs and forwards `userId` and `roles` headers to downstre
 
 Image upload is synchronous HTTP: MediaService validates magic bytes with Apache Tika, enforces a 2 MB limit, stores the file, and returns a media ID.
 
-ProductService publishes `CREATED`, `UPDATED`, and `DELETED` events to Kafka topic `product-events`. MediaService consumes `DELETED` events and removes the deleted product's image files and metadata asynchronously.
+ProductService publishes `UPDATED` and `DELETED` events to Kafka topic `product-events`. MediaService consumes `UPDATED` events to remove detached image files and metadata, and consumes `DELETED` events to remove all media belonging to a deleted product asynchronously.
 
 ## Validation Commands
 
