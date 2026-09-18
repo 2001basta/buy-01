@@ -97,12 +97,13 @@ public class MediaService {
         if (!media.getOwnerId().equals(currentUserId)) {
             throw new UnauthorizedActionException("You do not own this resource");
         }
-        Path filePath = Paths.get(media.getStoragePath());
-        try {
-            Files.deleteIfExists(filePath);
-        } catch (IOException ignored) {
-        }
-        mediaRepository.delete(media);
+        deleteMediaFilesAndRecords(List.of(media));
+    }
+
+    public void deleteIfPresent(String id, String currentUserId) {
+        mediaRepository.findById(id)
+                .filter(media -> media.getOwnerId().equals(currentUserId))
+                .ifPresent(media -> deleteMediaFilesAndRecords(List.of(media)));
     }
 
     public boolean allExist(List<String> ids, String ownerId) {

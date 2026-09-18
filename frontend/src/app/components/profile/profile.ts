@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormControl, FormGroup, Validators } 
 import { RouterLink } from '@angular/router';
 import { ProfileService } from '../../services/profile.service';
 import { MediaService } from '../../services/media.service';
+import { NotificationService } from '../../services/notification.service';
 import { UserProfile } from '../../models/user.model';
 
 @Component({
@@ -27,7 +28,8 @@ export class ProfileComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private profileService: ProfileService,
-    public mediaService: MediaService
+    public mediaService: MediaService,
+    private notification: NotificationService
   ) {
     this.form = this.fb.nonNullable.group({
       name: ['', [Validators.required, Validators.maxLength(120)]],
@@ -90,6 +92,7 @@ export class ProfileComponent implements OnInit {
         this.profile.set(profile);
         this.form.patchValue({ name: profile.name, email: profile.email });
         this.saving.set(false);
+        this.notification.show('Profile saved successfully.', 'success');
       },
       error: err => {
         this.error.set(err.error?.message ?? 'Profile update failed.');
