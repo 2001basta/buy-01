@@ -127,10 +127,15 @@ services:
 
       EUREKA_SERVER_URL: http://discovery-service:8761/eureka
 
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
 
     depends_on:
       mongodb:
+        condition: service_healthy
+
+      kafka:
         condition: service_healthy
 
       config-server:
@@ -158,6 +163,8 @@ services:
 
       EUREKA_SERVER_URL: http://discovery-service:8761/eureka
 
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
 
     volumes:
@@ -165,6 +172,9 @@ services:
 
     depends_on:
       mongodb:
+        condition: service_healthy
+
+      kafka:
         condition: service_healthy
 
       config-server:

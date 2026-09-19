@@ -8,11 +8,23 @@
   <p *ngIf="error()" class="state error">{{ error() }}</p>
 
   <div *ngIf="product()" class="detail">
-    <div class="images">
-      <img *ngFor="let id of product()!.imageIds"
-           [src]="mediaService.getUrl(id)" [alt]="product()!.name" />
-      <div *ngIf="!product()!.imageIds.length" class="placeholder">No images</div>
+    <div class="images" *ngIf="product()!.imageIds.length; else noImages">
+      <div class="image-main">
+        <img [src]="mediaService.getUrl(product()!.imageIds[0])" [alt]="product()!.name" />
+      </div>
+
+      <div class="image-thumbs" *ngIf="product()!.imageIds.length > 1">
+        <div class="thumb-card" *ngFor="let id of product()!.imageIds.slice(1)">
+          <img [src]="mediaService.getUrl(id)" [alt]="product()!.name" />
+        </div>
+      </div>
     </div>
+
+    <ng-template #noImages>
+      <div class="images placeholder-box">
+        <div class="placeholder">No images</div>
+      </div>
+    </ng-template>
 
     <div class="info">
       <p class="product-label">INDEPENDENT SELLER</p>

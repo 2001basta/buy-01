@@ -15,6 +15,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class CreateProductComponent implements OnInit {
   private readonly maxFileSize = 2 * 1024 * 1024;
+  private readonly maxProductImages = 5;
   private readonly allowedTypes = new Set(['image/jpeg', 'image/png']);
   form: FormGroup;
   product: WritableSignal<Product | null> = signal(null);
@@ -26,7 +27,7 @@ export class CreateProductComponent implements OnInit {
   previews = signal<string[]>([]);
   existingImageIds = signal<string[]>([]);
   isEdit = signal(false);
-
+  
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -56,18 +57,46 @@ export class CreateProductComponent implements OnInit {
   onFileChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.fileError.set('');
-    this.previews().forEach(url => URL.revokeObjectURL(url));
-    const files = Array.from(input.files ?? []);
-    const invalid = files.find(file => !this.allowedTypes.has(file.type) || file.size > this.maxFileSize);
-    if (invalid) {
-      this.pendingFiles.set([]);
-      this.previews.set([]);
+
+    const selectedFiles = Array.from(input.files ?? []);
+    const currentFiles = this.pendingFiles();
+    const currentTotal = currentFiles.length + this.existingImageIds().length;
+
+    const seen = new Set(currentFiles.map(file => `${file.name}-${file.size}-${file.lastModified}`));
+
+    const validFiles: File[] = [];
+    const invalidFiles: File[] = [];
+
+    selectedFiles.forEach(file => {
+      const key = `${file.name}-${file.size}-${file.lastModified}`;
+      if (seen.has(key)) {
+        return;
+      }
+      if (!this.allowedTypes.has(file.type) || file.size > this.maxFileSize) {
+        invalidFiles.push(file);
+        return;
+      }
+      validFiles.push(file);
+      seen.add(key);
+    });
+
+    if (invalidFiles.length) {
+      const invalid = invalidFiles[0];
       this.fileError.set(`${invalid.name} must be a JPEG or PNG image no larger than 2 MB.`);
+    }
+
+    if (currentTotal + validFiles.length > this.maxProductImages && !invalidFiles.length) {
+      this.fileError.set(`You can upload up to ${this.maxProductImages} images per product.`);
+    }
+
+    if (!validFiles.length) {
       input.value = '';
       return;
     }
-    this.pendingFiles.set(files);
-    this.previews.set(files.map(file => URL.createObjectURL(file)));
+
+    this.pendingFiles.set([...currentFiles, ...validFiles]);
+    this.previews.set([...this.previews(), ...validFiles.map(file => URL.createObjectURL(file))]);
+    input.value = '';
   }
 
   removeFile(index: number): void {
@@ -75,22 +104,28 @@ export class CreateProductComponent implements OnInit {
     if (urls[index]) URL.revokeObjectURL(urls[index]);
     this.pendingFiles.update(files => files.filter((_, fileIndex) => fileIndex !== index));
     this.previews.update(items => items.filter((_, previewIndex) => previewIndex !== index));
+    this.clearImageLimitErrorIfAllowed();
   }
 
   removeExistingImage(imageId: string): void {
     if (!this.product()) return;
+
     this.productService.removeImage(this.product()!.id, imageId).subscribe({
       next: product => {
         this.existingImageIds.set(product.imageIds);
-        this.mediaService.delete(imageId).subscribe({
-          error: err => this.error.set(err.error?.message ?? 'Image reference removed, but file cleanup failed')
-        });
+        this.clearImageLimitErrorIfAllowed();
       },
       error: err => this.error.set(err.error?.message ?? 'Unable to remove image from product')
     });
   }
 
   submit(): void {
+    const totalImages = this.pendingFiles().length + this.existingImageIds().length;
+    if (totalImages > this.maxProductImages) {
+      this.fileError.set(`You can upload up to ${this.maxProductImages} images per product.`);
+      return;
+    }
+
     if (this.form.invalid || this.fileError()) {
       this.form.markAllAsTouched();
       return;
@@ -150,5 +185,12 @@ export class CreateProductComponent implements OnInit {
 
   private cleanupMedia(imageIds: string[]): void {
     imageIds.forEach(id => this.mediaService.delete(id).subscribe({ error: () => undefined }));
+  }
+
+  private clearImageLimitErrorIfAllowed(): void {
+    const totalImages = this.pendingFiles().length + this.existingImageIds().length;
+    if (totalImages <= this.maxProductImages && this.fileError().startsWith('You can upload up to')) {
+      this.fileError.set('');
+    }
   }
 }

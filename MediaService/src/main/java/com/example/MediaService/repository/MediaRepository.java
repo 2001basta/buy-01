@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface MediaRepository extends MongoRepository<Media, String> {
     List<Media> findByOwnerIdAndIdIn(String ownerId, List<String> ids);
+    List<Media> findByProductId(String productId);
+    long countByProductId(String productId);
 }

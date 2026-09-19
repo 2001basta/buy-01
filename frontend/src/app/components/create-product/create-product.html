@@ -32,16 +32,25 @@
       <small class="field-error" *ngIf="form.controls['price'].touched && form.controls['price'].hasError('min')">Price must be greater than 0.</small>
     </div>
     <div class="field">
-      <div class="upload-heading"><span class="upload-icon">✦</span><div><label>Product photos</label><p class="hint">Clear images help your product get noticed.</p></div></div>
+      <div class="upload-heading"><span class="upload-icon">✦</span><div><label>Product photos</label><p class="hint">Upload a few clear shots to show the item from every angle.</p></div></div>
+
+      <div class="upload-dropzone">
+        <label class="upload-label" for="product-images">Choose images</label>
+        <input id="product-images" type="file" accept="image/jpeg,image/png" multiple (change)="onFileChange($event)" />
+      </div>
+
       <div class="preview-grid existing-previews" *ngIf="existingImageIds().length">
         <div class="preview" *ngFor="let imageId of existingImageIds()">
           <img [src]="mediaService.getUrl(imageId)" alt="Current product image" />
           <button type="button" (click)="removeExistingImage(imageId)" aria-label="Remove current image">×</button>
         </div>
       </div>
-      <input type="file" accept="image/jpeg,image/png" multiple (change)="onFileChange($event)" />
-      <p *ngIf="pendingFiles().length" class="file-count">{{ pendingFiles().length }} file(s) selected</p>
-      <p *ngIf="fileError()" class="field-error">{{ fileError() }}</p>
+
+      <div class="selection-summary" *ngIf="pendingFiles().length || fileError()">
+        <p *ngIf="pendingFiles().length" class="file-count">{{ pendingFiles().length }} image(s) selected</p>
+        <p *ngIf="fileError()" class="field-error">{{ fileError() }}</p>
+      </div>
+
       <div class="preview-grid" *ngIf="previews().length">
         <div class="preview" *ngFor="let preview of previews(); let i = index">
           <img [src]="preview" alt="Selected product preview" />
@@ -53,7 +62,7 @@
     <p class="error" *ngIf="error()">{{ error() }}</p>
 
     <div class="form-actions">
-      <button type="submit" [disabled]="saving() || uploading()">
+      <button type="submit" [disabled]="saving() || uploading() || !!fileError()">
         {{ uploading() ? 'Uploading images...' : saving() ? 'Saving...' : isEdit() ? 'Save Changes' : 'Create Product' }}
       </button>
       <a routerLink="/seller/dashboard" class="btn-cancel">Cancel</a>

@@ -40,12 +40,7 @@ public class ProductService {
 
         ProductResponse response = ProductResponse.from(productRepository.save(product));
 
-        eventProducer.send(new ProductEvent(
-                "CREATED", response.id(), sellerId,
-                response.name(), response.price(),
-                response.imageIds(), LocalDateTime.now()
-        ));
-
+        
         return response;
     }
 
@@ -69,13 +64,7 @@ public class ProductService {
         if (req.price() != null) product.setPrice(req.price());
 
         ProductResponse response = ProductResponse.from(productRepository.save(product));
-
-        eventProducer.send(new ProductEvent(
-                "UPDATED", response.id(), currentUserId,
-                response.name(), response.price(),
-                response.imageIds(), LocalDateTime.now()
-        ));
-
+         
         return response;
     }
 
@@ -97,13 +86,16 @@ public class ProductService {
         Product product = findOrThrow(id);
         requireOwner(product.getSellerId(), currentUserId);
 
+        if (req.imageIds().size() > 5) {
+            throw new IllegalArgumentException("You cannot attach more than 5 images to a product");
+        }
+
         if (!mediaServiceClient.allExist(req.imageIds(), currentUserId)) {
             throw new NotFoundException("One or more imageIds do not exist or are not owned by you");
         }
 
         product.setImageIds(new ArrayList<>(req.imageIds()));
         ProductResponse response = ProductResponse.from(productRepository.save(product));
-
         eventProducer.send(new ProductEvent(
                 "UPDATED", response.id(), currentUserId,
                 response.name(), response.price(),
@@ -114,6 +106,7 @@ public class ProductService {
     }
 
     public ProductResponse removeImage(String id, String imageId, String currentUserId, String roles) {
+        
         requireSeller(roles);
         Product product = findOrThrow(id);
         requireOwner(product.getSellerId(), currentUserId);
@@ -121,12 +114,12 @@ public class ProductService {
         if (!product.getImageIds().remove(imageId)) {
             throw new NotFoundException("Image is not attached to this product");
         }
-
+       
         ProductResponse response = ProductResponse.from(productRepository.save(product));
         eventProducer.send(new ProductEvent(
-                "UPDATED", response.id(), currentUserId,
+            "IMAGE_REMOVED", response.id(), currentUserId,
                 response.name(), response.price(),
-                response.imageIds(), LocalDateTime.now()
+            List.of(imageId), LocalDateTime.now()
         ));
         return response;
     }

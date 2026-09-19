@@ -3,6 +3,8 @@ package com.example.UserService.service;
 import com.example.UserService.entity.User;
 import com.example.UserService.dto.ProfileUpdateRequest;
 import com.example.UserService.dto.UserResponse;
+import com.example.UserService.event.AvatarEvent;
+import com.example.UserService.event.AvatarEventProducer;
 import com.example.UserService.outils.Role;
 import com.example.UserService.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final AvatarEventProducer avatarEventProducer;
 
     public String signup(String name, String email, String password, Role role) {
         if (userRepository.findByEmail(email).isPresent()) {
@@ -56,13 +59,18 @@ public class AuthService {
 
     public UserResponse updateProfile(String userId, ProfileUpdateRequest request) {
         User user = findById(userId);
+        String previousAvatar = user.getAvatar();
         userRepository.findByEmail(request.email())
                 .filter(existing -> !existing.getId().equals(userId))
                 .ifPresent(existing -> { throw new RuntimeException("Email already exists"); });
         user.setName(request.name().trim());
         user.setEmail(request.email().trim().toLowerCase());
         if (request.avatar() != null) user.setAvatar(request.avatar());
-        return UserResponse.from(userRepository.save(user));
+        UserResponse response = UserResponse.from(userRepository.save(user));
+        if (request.avatar() != null && previousAvatar != null && !previousAvatar.equals(request.avatar())) {
+            avatarEventProducer.send(new AvatarEvent("AVATAR_REPLACED", userId, previousAvatar));
+        }
+        return response;
     }
 
     private User findById(String userId) {
