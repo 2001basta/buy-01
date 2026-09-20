@@ -218,9 +218,13 @@ services:
   api-gateway:
     build: ./ApiGateway
     ports:
-      - "8080:8080"
+      - "8443:8443"
     environment:
       JWT_SECRET: ${JWT_SECRET}
+
+      SERVER_SSL_ENABLED: "true"
+      SERVER_SSL_KEY_STORE: file:/app/certs/gateway-keystore.p12
+      SERVER_SSL_KEY_STORE_PASSWORD: ${SERVER_SSL_KEY_STORE_PASSWORD:-changeit}
 
       USER_SERVICE_URL: http://user-service:8081
 
@@ -233,6 +237,9 @@ services:
       EUREKA_SERVER_URL: http://discovery-service:8761/eureka
 
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+
+    volumes:
+      - ./certs/gateway-keystore.p12:/app/certs/gateway-keystore.p12:ro
 
     depends_on:
       config-server:

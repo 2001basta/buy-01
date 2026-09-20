@@ -1,5 +1,9 @@
 .env
 
+# Local HTTPS keystore contains a private key
+certs/*.p12
+certs/*.key
+
 # Build and generated output
 .gradle/
 build/
