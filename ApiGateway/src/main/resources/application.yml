@@ -21,7 +21,7 @@ spring:
         # Public: signup & login (no JWT required)
         - id: auth-public
           # in this uri we can write "uri: lb://UserService", eurka will find the ip
-          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          uri: lb://${USER_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/api/auth/**
           filters:
@@ -29,7 +29,7 @@ spring:
 
         # Protected: user profile endpoints
         - id: user-service
-          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          uri: lb://${USER_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/api/users/**
           filters:
@@ -38,20 +38,20 @@ spring:
 
         # Public: product reads
         - id: product-public-list
-          uri: ${PRODUCT_SERVICE_URL:http://localhost:8082}
+          uri: lb://${PRODUCT_SERVICE_URL:http://localhost:8082}
           predicates:
             - Path=/api/products
             - Method=GET
 
         - id: product-public-detail
-          uri: ${PRODUCT_SERVICE_URL:http://localhost:8082}
+          uri: lb://${PRODUCT_SERVICE_URL:http://localhost:8082}
           predicates:
             - Path=/api/products/{id}
             - Method=GET
 
         # Protected: product CRUD
         - id: product-protected
-          uri: ${PRODUCT_SERVICE_URL:http://localhost:8082}
+          uri: lb://${PRODUCT_SERVICE_URL:http://localhost:8082}
           predicates:
             - Path=/api/products/**
             - Method=POST,PUT,DELETE
@@ -60,14 +60,14 @@ spring:
 
         # Public: serve/view media files (like a CDN link — <img src> can't attach a JWT)
         - id: media-public-serve
-          uri: ${MEDIA_SERVICE_URL:http://localhost:8083}
+          uri: lb://${MEDIA_SERVICE_URL:http://localhost:8083}
           predicates:
             - Path=/api/media/{id}
             - Method=GET
 
         # Protected: media upload / delete
         - id: media-service
-          uri: ${MEDIA_SERVICE_URL:http://localhost:8083}
+          uri: lb://${MEDIA_SERVICE_URL:http://localhost:8083}
           predicates:
             - Path=/api/media/**
           filters:

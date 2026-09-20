@@ -9,7 +9,6 @@
   </div>
 
   <p *ngIf="loading()" class="state">Loading...</p>
-  <p *ngIf="error()" class="state error">{{ error() }}</p>
 
   <form *ngIf="profile()" [formGroup]="form" (ngSubmit)="save()" class="profile-card">
     <div class="avatar-block">
