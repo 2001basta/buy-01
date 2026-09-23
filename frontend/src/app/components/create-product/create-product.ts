@@ -27,7 +27,7 @@ export class CreateProductComponent implements OnInit {
   previews = signal<string[]>([]);
   existingImageIds = signal<string[]>([]);
   isEdit = signal(false);
-  
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -39,7 +39,8 @@ export class CreateProductComponent implements OnInit {
     this.form = this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
-      price: [null, [Validators.required, Validators.min(0.01)]]
+      price: [null, [Validators.required, Validators.min(0.01)]],
+      imageIds:[]
     });
   }
 
@@ -109,14 +110,19 @@ export class CreateProductComponent implements OnInit {
 
   removeExistingImage(imageId: string): void {
     if (!this.product()) return;
+    this.product()!.imageIds =
+      this.product()!.imageIds.filter(id => id !== imageId);
 
-    this.productService.removeImage(this.product()!.id, imageId).subscribe({
-      next: product => {
-        this.existingImageIds.set(product.imageIds);
-        this.clearImageLimitErrorIfAllowed();
-      },
-      error: err => this.error.set(err.error?.message ?? 'Unable to remove image from product')
-    });
+    this.existingImageIds.set(this.product()!.imageIds);
+    this.clearImageLimitErrorIfAllowed();
+    /*
+        this.productService.removeImage(this.product()!.id, imageId).subscribe({
+          next: product => {
+            this.existingImageIds.set(product.imageIds);
+            this.clearImageLimitErrorIfAllowed();
+          },
+          error: err => this.error.set(err.error?.message ?? 'Unable to remove image from product')
+        });*/
   }
 
   submit(): void {
@@ -134,7 +140,8 @@ export class CreateProductComponent implements OnInit {
     this.error.set('');
 
     if (this.isEdit() && this.product()) {
-      this.productService.update(this.product()!.id, this.form.value).subscribe({
+      this.form.get('imageIds')?.setValue(this.product()!.imageIds);
+      this.productService.update(this.product()!.id,this.form.value).subscribe({
         next: p => this.uploadImages(p.id),
         error: err => { this.error.set(err.error?.message ?? 'Update failed'); this.saving.set(false); }
       });

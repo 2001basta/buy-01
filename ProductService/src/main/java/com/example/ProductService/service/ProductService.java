@@ -40,7 +40,6 @@ public class ProductService {
 
         ProductResponse response = ProductResponse.from(productRepository.save(product));
 
-        
         return response;
     }
 
@@ -59,12 +58,25 @@ public class ProductService {
         Product product = findOrThrow(id);
         requireOwner(product.getSellerId(), currentUserId);
 
-        if (req.name() != null) product.setName(req.name());
-        if (req.description() != null) product.setDescription(req.description());
-        if (req.price() != null) product.setPrice(req.price());
-
+        if (req.name() != null) {
+            product.setName(req.name());
+        }
+        if (req.description() != null) {
+            product.setDescription(req.description());
+        }
+        if (req.price() != null) {
+            product.setPrice(req.price());
+        }
+        if (req.imageIds() != null) {
+            List<String> newImageIds = Arrays.asList(req.imageIds());
+            product.getImageIds().removeIf(imageId -> !newImageIds.contains(imageId));
+        }
         ProductResponse response = ProductResponse.from(productRepository.save(product));
-         
+        eventProducer.send(new ProductEvent(
+                "UPDATED", response.id(), currentUserId,
+                response.name(), response.price(),
+                response.imageIds(), LocalDateTime.now()));
+
         return response;
     }
 
@@ -77,8 +89,7 @@ public class ProductService {
         eventProducer.send(new ProductEvent(
                 "DELETED", id, currentUserId,
                 product.getName(), product.getPrice(),
-                product.getImageIds(), LocalDateTime.now()
-        ));
+                product.getImageIds(), LocalDateTime.now()));
     }
 
     public ProductResponse attachImages(String id, String currentUserId, String roles, AttachImagesRequest req) {
@@ -93,20 +104,18 @@ public class ProductService {
         if (!mediaServiceClient.allExist(req.imageIds(), currentUserId)) {
             throw new NotFoundException("One or more imageIds do not exist or are not owned by you");
         }
-
         product.setImageIds(new ArrayList<>(req.imageIds()));
         ProductResponse response = ProductResponse.from(productRepository.save(product));
         eventProducer.send(new ProductEvent(
                 "UPDATED", response.id(), currentUserId,
                 response.name(), response.price(),
-                response.imageIds(), LocalDateTime.now()
-        ));
+                response.imageIds(), LocalDateTime.now()));
 
         return response;
     }
 
     public ProductResponse removeImage(String id, String imageId, String currentUserId, String roles) {
-        
+
         requireSeller(roles);
         Product product = findOrThrow(id);
         requireOwner(product.getSellerId(), currentUserId);
@@ -114,21 +123,20 @@ public class ProductService {
         if (!product.getImageIds().remove(imageId)) {
             throw new NotFoundException("Image is not attached to this product");
         }
-       
+
         ProductResponse response = ProductResponse.from(productRepository.save(product));
         eventProducer.send(new ProductEvent(
-            "IMAGE_REMOVED", response.id(), currentUserId,
+                "IMAGE_REMOVED", response.id(), currentUserId,
                 response.name(), response.price(),
-            List.of(imageId), LocalDateTime.now()
-        ));
+                List.of(imageId), LocalDateTime.now()));
         return response;
     }
 
     private void requireSeller(String roles) {
         boolean seller = roles != null && Arrays.stream(roles
-                        .replace("[", "")
-                        .replace("]", "")
-                        .split(","))
+                .replace("[", "")
+                .replace("]", "")
+                .split(","))
                 .map(String::trim)
                 .anyMatch("SELLER"::equals);
         if (!seller) {

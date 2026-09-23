@@ -7,5 +7,6 @@ import jakarta.validation.constraints.Size;
 public record UpdateProductRequest(
         @Size(max = 120) @Pattern(regexp = "(?s).*\\S.*") String name,
         @Size(max = 2000) @Pattern(regexp = "(?s).*\\S.*") String description,
-        @Positive Double price
+        @Positive Double price,
+        String[] imageIds
 ) {}

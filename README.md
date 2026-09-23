@@ -1,6 +1,6 @@
 # Buy 01 Marketplace
 
-Buy 01 is a small e-commerce marketplace built with Spring Boot microservices and an Angular single-page application. Clients can browse products. Sellers can create, update, delete, and attach images to their own products.
+Buy 01 is an e-commerce marketplace built with Spring Boot microservices and an Angular single-page application. Clients can browse products, while sellers can create, update, delete, and attach images to their own products.
 
 ## Architecture
 
@@ -27,6 +27,34 @@ Services use separate MongoDB databases:
 - Node.js 20+ and npm for local Angular development
 - Java 17 only when running a backend outside Docker
 
+## Install Angular Without `sudo`
+
+Use `nvm` to install Node.js and keep global npm packages in your user account. This avoids changing system directories with `sudo`.
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+source ~/.bashrc  # use source ~/.zshrc when your shell is zsh
+nvm install 20
+nvm use 20
+```
+
+The project already declares the Angular CLI locally. Install dependencies from the frontend directory:
+
+```bash
+cd frontend
+npm install
+npx ng version
+```
+
+You can run all Angular commands with `npx ng ...` or the project scripts, so a global Angular installation is optional. If you also want the `ng` command globally, install it after `nvm` is active:
+
+```bash
+npm install --global @angular/cli
+ng version
+```
+
+Do not use `sudo npm install -g @angular/cli`.
+
 ## Run With Docker
 
 The repository expects a root `.env` file containing a shared JWT secret. It is ignored by Git.
@@ -36,7 +64,7 @@ printf 'JWT_SECRET=%s\n' "$(openssl rand -base64 48 | tr -d '\n')" > .env
 docker compose up --build
 ```
 
-Open the frontend through the Angular dev server:
+Open the frontend through the Angular HTTPS development server:
 
 ```bash
 cd frontend
@@ -44,11 +72,53 @@ npm install
 npm start
 ```
 
-The frontend runs at `http://localhost:4200` and proxies API calls to the Gateway at `http://localhost:8080`.
+The frontend runs at `https://localhost:4200` and proxies API calls to the HTTPS Gateway at `https://localhost:8443`. Angular CLI creates a development certificate automatically. Your browser will show a certificate warning on the first visit; accept it for local development only.
+
+The proxy accepts the Gateway's local self-signed certificate. This is configured in `frontend/proxy.conf.json` and must not be copied as a production TLS configuration.
+
+## Create a New Local HTTPS Certificate
+
+The Angular development server creates its own temporary certificate automatically. The API Gateway uses a separate Java PKCS12 keystore at `certs/gateway-keystore.p12`. That keystore is ignored by Git because it contains a private key, so each developer can create it locally.
+
+Make sure Java 17 and `keytool` are installed, then run this from the repository root:
+
+```bash
+rm -f certs/gateway-keystore.p12
+keytool -genkeypair \
+    -alias gateway \
+    -keyalg RSA \
+    -keysize 2048 \
+    -validity 365 \
+    -storetype PKCS12 \
+    -keystore certs/gateway-keystore.p12 \
+    -storepass changeit \
+    -keypass changeit \
+    -dname "CN=localhost, OU=Buy01, O=Buy01, L=Local, ST=Local, C=US" \
+    -ext "SAN=dns:localhost,ip:127.0.0.1"
+```
+
+The alias and password must match the Gateway configuration. The default local password is `changeit`; for a different password, use the same value when generating the keystore and add it to the root `.env` file:
+
+```dotenv
+SERVER_SSL_KEY_STORE_PASSWORD=your-local-password
+```
+
+Docker mounts this file automatically through `docker-compose.yml`. You can optionally export the public certificate for inspection or browser trust configuration:
+
+```bash
+keytool -exportcert \
+    -alias gateway \
+    -keystore certs/gateway-keystore.p12 \
+    -storepass changeit \
+    -rfc \
+    -file certs/gateway.crt
+```
+
+Do not commit the `.p12` keystore or private key. This self-signed certificate is for local development only; use a certificate issued by a trusted authority in production.
 
 Public development endpoints:
 
-- Gateway: `http://localhost:8080`
+- Gateway: `https://localhost:8443`
 - Config Server: `http://localhost:8888`
 - Eureka: `http://localhost:8761`
 - Zipkin: `http://localhost:9411`
@@ -87,11 +157,19 @@ npm run build
 npm test -- --watch=false
 ```
 
+To verify the HTTPS development server directly:
+
+```bash
+cd frontend
+npm start
+curl -kI https://localhost:4200
+```
+
 For local backend tests, install Java 17 and run `./gradlew test` from each service that includes a Gradle wrapper.
 
 ## Security Notes
 
 - Never commit `.env` or production secrets.
-- Use HTTPS and a managed secret store in production.
+- Use a trusted certificate, HTTPS, and a managed secret store in production.
 - Keep UserService, ProductService, MediaService, MongoDB, and Kafka on the private network.
 - Replace the development CORS origin with the deployed frontend origin.

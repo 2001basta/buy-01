@@ -1,12 +1,26 @@
 server:
-  port: 8080
+  port: 8443
+  ssl:
+    enabled: true
+    key-store: ${SERVER_SSL_KEY_STORE:file:/app/certs/gateway-keystore.p12}
+    key-store-password: ${SERVER_SSL_KEY_STORE_PASSWORD:changeit}
+    key-store-type: PKCS12
+    key-alias: gateway
 
 jwt:
-  secret: ${JWT_SECRET:mySuperSecretKeyForTheMarketplace01}
+  secret: ${JWT_SECRET}
 
 spring:
   cloud:
     gateway:
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowed-origins: ${FRONTEND_ORIGIN:https://localhost:4200}
+            allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+            allowed-headers: '*'
+            allow-credentials: true
       routes:
 
         - id: auth-public
@@ -24,17 +38,30 @@ spring:
             - JwtAuthFilter
             - RewritePath=/api/users/(?<segment>.*), /users/${segment}
 
-        - id: product-service
+        - id: product-public-list
+          uri: lb://ProductService
+          predicates:
+            - Path=/api/products
+            - Method=GET
+
+        - id: product-public-detail
+          uri: lb://ProductService
+          predicates:
+            - Path=/api/products/{id}
+            - Method=GET
+
+        - id: product-protected
           uri: lb://ProductService
           predicates:
             - Path=/api/products/**
+            - Method=POST,PUT,DELETE
           filters:
             - JwtAuthFilter
 
         - id: media-public-serve
           uri: lb://MediaService
           predicates:
-            - Path=/api/media/**
+            - Path=/api/media/{id}
             - Method=GET
 
         - id: media-service
